@@ -5156,6 +5156,7 @@ GameObject:
   m_Component:
   - component: {fileID: 500036491}
   - component: {fileID: 500036492}
+  - component: {fileID: 500036493}
   m_Layer: 0
   m_Name: SocketManager
   m_TagString: Untagged
@@ -5192,6 +5193,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotManager: {fileID: 2046803210}
   bonusdata: []
+  _jsManager: {fileID: 500036493}
+  SocketURI: https://game-rtp-backend-w7g7.onrender.com
+  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImdhdXJhdiIsImRlc2lnbmF0aW9uIjoiY29tcGFueSIsImlhdCI6MTcxODMzOTk2OCwiZXhwIjoxNzE4NDI2MzY4fQ.yCx6chCeFmNAgoR58OeoCwzdKjHlrFZRIxIN8mY-M4s
+--- !u!114 &500036493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 500036490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93ebd9f5c201749cbbd9553f4b3a076a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &518259432
 GameObject:
   m_ObjectHideFlags: 0
@@ -7063,7 +7079,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100.30005, y: -103.20001}
+  m_AnchoredPosition: {x: 100.299805, y: -103.20007}
   m_SizeDelta: {x: 88.21997, y: 84.359985}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &702497084
