@@ -169,6 +169,8 @@ public class SlotBehaviour : MonoBehaviour
         string text1 = "please place your bet";
         string text2 = "betting on 243 win ways";
         Textroutine = StartCoroutine(FlickerText(text1, text2));
+
+        tweenHeight = (myImages.Length * IconSizeFactor) - 280;
     }
 
     private IEnumerator FlickerText(string text1, string text2 = null)
@@ -343,10 +345,10 @@ public class SlotBehaviour : MonoBehaviour
     }
 
     //populate the slots with the values recieved from backend
-    internal void PopulateInitalSlots(int number, List<int> myvalues)
-    {
-        PopulateSlot(myvalues, number);
-    }
+    //internal void PopulateInitalSlots(int number, List<int> myvalues)
+    //{
+    //    PopulateSlot(myvalues, number);
+    //}
 
     internal void SetInitialUI()
     {
@@ -357,7 +359,7 @@ public class SlotBehaviour : MonoBehaviour
         if (Lines_text) Lines_text.text = SocketManager.initialData.LinesCount[LineCounter].ToString();
         if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.haveWon.ToString();
         if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
-        uiManager.InitialiseUIData(SocketManager.initUIData.paylines);
+        uiManager.InitialiseUIData(SocketManager.initUIData.AbtLogo.link, SocketManager.initUIData.AbtLogo.logoSprite, SocketManager.initUIData.ToULink, SocketManager.initUIData.PopLink, SocketManager.initUIData.paylines);
     }
 
     //reset the layout after populating the slots
@@ -498,7 +500,7 @@ public class SlotBehaviour : MonoBehaviour
             }
             Textroutine = StartCoroutine(FlickerText("Free spins in progress !!!"));
         }
-        if (uiManager) uiManager.ClosePopup();
+        //if (uiManager) uiManager.ClosePopup();
         if(!autoSpin)
         {
             if (AutoSpinRoutine != null)
@@ -563,26 +565,26 @@ public class SlotBehaviour : MonoBehaviour
             List<int> resultnum = SocketManager.resultData.FinalResultReel[j]?.Split(',')?.Select(Int32.Parse)?.ToList();
             for (int i = 0; i < 5; i++)
             {
-                if (images[i].slotImages[images[i].slotImages.Count - 5 + j]) images[i].slotImages[images[i].slotImages.Count - 5 + j].sprite = myImages[resultnum[i]];
+                //if (images[i].slotImages[images[i].slotImages.Count - 5 + j]) images[i].slotImages[images[i].slotImages.Count - 5 + j].sprite = myImages[resultnum[i]];
 
-                if (resultnum[i] == 11)
-                {
-                    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMin = new Vector2(-60, -60);
-                    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMax = new Vector2(60, 60);
-                    PopulateAnimationSprites(images[i].slotImages[images[i].slotImages.Count - 5 + j].gameObject.GetComponent<ImageAnimation>(), resultnum[i]);
-                }
-                else if (resultnum[i] == 12)
-                {
-                    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMin = new Vector2(-30, -30);
-                    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMax = new Vector2(30, 30);
-                    PopulateAnimationSprites(images[i].slotImages[images[i].slotImages.Count - 5 + j].gameObject.GetComponent<ImageAnimation>(), resultnum[i]);
-                }
-                else
-                {
-                    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMin = new Vector2(0, 0);
-                    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMax = new Vector2(0, 0);
-                    PopulateAnimationSprites(images[i].slotImages[images[i].slotImages.Count - 5 + j].gameObject.GetComponent<ImageAnimation>(), resultnum[i]);
-                }
+                //if (resultnum[i] == 11)
+                //{
+                //    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMin = new Vector2(-60, -60);
+                //    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMax = new Vector2(60, 60);
+                //    PopulateAnimationSprites(images[i].slotImages[images[i].slotImages.Count - 5 + j].gameObject.GetComponent<ImageAnimation>(), resultnum[i]);
+                //}
+                //else if (resultnum[i] == 12)
+                //{
+                //    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMin = new Vector2(-30, -30);
+                //    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMax = new Vector2(30, 30);
+                //    PopulateAnimationSprites(images[i].slotImages[images[i].slotImages.Count - 5 + j].gameObject.GetComponent<ImageAnimation>(), resultnum[i]);
+                //}
+                //else
+                //{
+                //    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMin = new Vector2(0, 0);
+                //    if (images[i].slotRects[images[i].slotRects.Count - 5 + j]) images[i].slotRects[images[i].slotRects.Count - 5 + j].offsetMax = new Vector2(0, 0);
+                //    PopulateAnimationSprites(images[i].slotImages[images[i].slotImages.Count - 5 + j].gameObject.GetComponent<ImageAnimation>(), resultnum[i]);
+                //}
             }
         }
 
@@ -604,7 +606,7 @@ public class SlotBehaviour : MonoBehaviour
 
         if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
 
-        if(IsFreeSpin || SocketManager.resultData.freeSpins > 0)
+        if(IsFreeSpin || SocketManager.resultData.freeSpins.count > 0)
         {
             yield return new WaitForSeconds(4);
         }
@@ -620,15 +622,15 @@ public class SlotBehaviour : MonoBehaviour
         {
             IsSpinning = false;
         }
-        if (SocketManager.resultData.freeSpins > 0)
+        if (SocketManager.resultData.freeSpins.count > 0)
         {
-            uiManager.FreeSpinProcess((int)SocketManager.resultData.freeSpins);
+            uiManager.FreeSpinProcess((int)SocketManager.resultData.freeSpins.count);
         }
     }
 
     internal void CallCloseSocket()
     {
-        SocketManager.CloseWebSocket();
+        SocketManager.CloseSocket();
     }
 
     [SerializeField]
@@ -738,7 +740,7 @@ public class SlotBehaviour : MonoBehaviour
     {
         CheckPopups = false;
 
-        if (SocketManager.resultData.freeSpins > 0) 
+        if (SocketManager.resultData.freeSpins.count > 0) 
         {
             if(IsAutoSpin)
             {
@@ -829,7 +831,7 @@ public class SlotBehaviour : MonoBehaviour
                 {
                     for (int k = 0; k < Tempimages[i].slotImages.Count; k++)
                     {
-                        StartGameAnimation(Tempimages[i].slotImages[k].gameObject);
+                        //StartGameAnimation(Tempimages[i].slotImages[k].gameObject);
                     }
                 }
             }
@@ -843,11 +845,11 @@ public class SlotBehaviour : MonoBehaviour
                     {
                         if (points_anim[k] >= 10)
                         {
-                            StartGameAnimation(Tempimages[(points_anim[k] / 10) % 10].slotImages[points_anim[k] % 10].gameObject);
+                            //StartGameAnimation(Tempimages[(points_anim[k] / 10) % 10].slotImages[points_anim[k] % 10].gameObject);
                         }
                         else
                         {
-                            StartGameAnimation(Tempimages[0].slotImages[points_anim[k]].gameObject);
+                            //StartGameAnimation(Tempimages[0].slotImages[points_anim[k]].gameObject);
                         }
                     }
                 }
@@ -857,7 +859,7 @@ public class SlotBehaviour : MonoBehaviour
                 StopCoroutine(SlotAnimRoutine);
                 SlotAnimRoutine = null;
             }
-            SlotAnimRoutine = StartCoroutine(slotLineAnim());
+            //SlotAnimRoutine = StartCoroutine(slotLineAnim());
         }
         else
         {
@@ -898,6 +900,18 @@ public class SlotBehaviour : MonoBehaviour
         {
             Tempimages[value].slotImages.Add(images[value].slotImages[images[value].slotImages.Count - 5 + j]);
             Tempimages[value].slotRects.Add(images[value].slotRects[images[value].slotRects.Count - 5 + j]);
+        }
+    }
+
+    internal void shuffleInitialMatrix()
+    {
+        for (int i = 0; i < Tempimages.Count; i++)
+        {
+            for (int j = 0; j < Tempimages[i].slotImages.Count; j++)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, myImages.Length);
+                Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<Image>().sprite = myImages[randomIndex];
+            }
         }
     }
 
