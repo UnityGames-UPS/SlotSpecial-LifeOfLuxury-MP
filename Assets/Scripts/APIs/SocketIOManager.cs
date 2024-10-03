@@ -41,9 +41,7 @@ public class SocketIOManager : MonoBehaviour
     private string testToken;
 
     protected string gameID = "SL-VIK";
-
     internal bool isLoaded = false;
-
     internal bool SetInit = false;
 
     private const int maxReconnectionAttempts = 6;
@@ -54,12 +52,13 @@ public class SocketIOManager : MonoBehaviour
         //Debug.unityLogger.logEnabled = false;
         isLoaded = false;
         SetInit = false;
-
     }
 
     private void Start()
     {
         //OpenWebsocket();
+
+        //HACK: To Be Uncommented When To Start The Game By Connecting Backend
         OpenSocket();
     }
 
@@ -302,6 +301,8 @@ public class SocketIOManager : MonoBehaviour
                     myData.message.GameData.FinalResultReel = ConvertListOfListsToStrings(myData.message.GameData.ResultReel);
                     myData.message.GameData.FinalsymbolsToEmit = TransformAndRemoveRecurring(myData.message.GameData.symbolsToEmit);
                     resultData = myData.message.GameData;
+                    //HACK: To be removed when going to production
+                    Debug.Log(string.Join(",", resultData.linesToEmit));
                     playerdata = myData.message.PlayerData;
                     isResultdone = true;
                     break;

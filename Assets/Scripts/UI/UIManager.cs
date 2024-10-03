@@ -117,13 +117,19 @@ public class UIManager : MonoBehaviour
         if (Right_Button) Right_Button.onClick.AddListener(delegate { ToggleSlides(true); });
 
         if (Left_Button) Left_Button.onClick.RemoveAllListeners();
-        if (Left_Button) Left_Button.onClick.AddListener(delegate { ToggleSlides(true); });
+        if (Left_Button) Left_Button.onClick.AddListener(delegate { ToggleSlides(false); });
 
         if (Paytable_Button) Paytable_Button.onClick.RemoveAllListeners();
         if (Paytable_Button) Paytable_Button.onClick.AddListener(delegate { OpenClosePaytable(true); });
 
         if (ClosePayTable_Button) ClosePayTable_Button.onClick.RemoveAllListeners();
-        if (ClosePayTable_Button) ClosePayTable_Button.onClick.AddListener(delegate { OpenClosePaytable(false); });
+        if (ClosePayTable_Button) ClosePayTable_Button.onClick.AddListener(delegate
+        {
+            OpenClosePaytable(false);
+            if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(false);
+            slideCounter = 0;
+            if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(true);
+        });
 
         if (Settings_Button) Settings_Button.onClick.RemoveAllListeners();
         if (Settings_Button) Settings_Button.onClick.AddListener(OpenSettings);
@@ -191,6 +197,11 @@ public class UIManager : MonoBehaviour
     internal void ADfunction()
     {
         OpenPopup(ADPopup_Object);
+    }
+
+    internal void LowBalPopup()
+    {
+        OpenPopup(LBPopup_Object);
     }
 
     internal void InitialiseUIData(string SupportUrl, string AbtImgUrl, string TermsUrl, string PrivacyUrl, Paylines symbolsText)
@@ -311,24 +322,31 @@ public class UIManager : MonoBehaviour
     private void ToggleSlides(bool isRight)
     {
         if (audioController) audioController.PlayButtonAudio();
+
         if (isRight)
         {
             if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(false);
+
             slideCounter++;
+
             if (slideCounter >= InfoSlides.Length)
             {
                 slideCounter = 0;
             }
+
             if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(true);
         }
         else
         {
             if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(false);
+
             slideCounter--;
+
             if (slideCounter < 0)
             {
                 slideCounter = InfoSlides.Length - 1;
             }
+
             if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(true);
         }
     }
