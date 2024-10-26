@@ -63,6 +63,33 @@ public class SocketIOManager : MonoBehaviour
         OpenSocket();
     }
 
+    #region GAMBLE GAME
+    internal void StartGambleGame()
+    {
+        GambleData data = new GambleData();
+        data.id = "GAMBLEINIT";
+        string json = JsonUtility.ToJson(data);
+        SendDataWithNamespace("message", json);
+    }
+
+    internal void SelectGambleCard(string m_red_black)
+    {
+        GambleResultData data = new GambleResultData();
+        data.id = "GAMBLERESULT";
+        data.cardType = m_red_black.ToUpper();
+        string json = JsonUtility.ToJson(data);
+        SendDataWithNamespace("message", json);
+    }
+
+    internal void CollectGambledAmount()
+    {
+        GambleData data = new GambleData();
+        data.id = "GAMBLECOLLECT";
+        string json = JsonUtility.ToJson(data);
+        SendDataWithNamespace("message", json);
+    }
+    #endregion
+
     void ReceiveAuthToken(string jsonData)
     {
         Debug.Log("Received data: " + jsonData);
@@ -247,6 +274,7 @@ public class SocketIOManager : MonoBehaviour
             else
             {
                 this.manager.Socket.Emit(eventName);
+                //Debug.Log(string.Concat("<color=green><b>", "JSON data sent: " + json, "</b></color>"));
             }
         }
         else
@@ -307,6 +335,21 @@ public class SocketIOManager : MonoBehaviour
                     isResultdone = true;
                     break;
                 }
+            case "GAMBLEINIT":
+                {
+                    Debug.Log(string.Concat("<color=red><b>", "Gamble Initialized", "</b></color>"));
+                    break;
+                }
+            case "GAMBLERESULT":
+                {
+                    Debug.Log(string.Concat("<color=red><b>", "Gamble Result", "</b></color>"));
+                    break;
+                }
+            case "GAMEBLECOLLECT":
+                {
+                    Debug.Log(string.Concat("<color=red><b>", "Gamble Collect", "</b></color>"));
+                    break;
+                }
             case "ExitUser":
                 {
                     if (this.manager != null)
@@ -347,7 +390,7 @@ public class SocketIOManager : MonoBehaviour
         message.data = new BetData();
         message.data.currentBet = currBet;
         message.data.spins = 1;
-        message.data.currentLines = 20;
+        message.data.currentLines = 25;
         message.id = "SPIN";
         // Serialize message data to JSON
         string json = JsonUtility.ToJson(message);
@@ -440,6 +483,20 @@ public class MessageData
 {
     public BetData data;
     public string id;
+}
+
+[Serializable]
+public class GambleData
+{
+    public string id;
+    //public string CardType;
+}
+
+[Serializable]
+public class GambleResultData
+{
+    public string id;
+    public string cardType;
 }
 
 [Serializable]

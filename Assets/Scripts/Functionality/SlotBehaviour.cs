@@ -14,13 +14,13 @@ public class SlotBehaviour : MonoBehaviour
 
     [Header("Sprites")]
     [SerializeField]
-    private Sprite[] myImages;  //images taken initially
+    private Sprite[] myImages;
 
     [Header("Slot Images")]
     [SerializeField]
-    private List<SlotImage> images;     //class to store total images
+    private List<SlotImage> images;
     [SerializeField]
-    private List<SlotImage> Tempimages;     //class to store the result matrix
+    private List<SlotImage> Tempimages;
 
     [Header("Slots Objects")]
     [SerializeField]
@@ -123,11 +123,15 @@ public class SlotBehaviour : MonoBehaviour
     [SerializeField]
     private SocketIOManager SocketManager;
 
+    [Header("Gameble Controller")]
+    [SerializeField]
+    private GambleController m_GambleController;
+
     private Coroutine AutoSpinRoutine = null;
     private Coroutine FreeSpinRoutine = null;
     private Coroutine tweenroutine;
     private Coroutine Textroutine;
-    private Coroutine AnimationToggleRoutine;
+    private Coroutine AnimationToggleRoutine = null;
     private Coroutine SlotAnimRoutine = null;
 
     private bool IsAutoSpin = false;
@@ -142,6 +146,10 @@ public class SlotBehaviour : MonoBehaviour
 
     private double currentBalance = 0;
     private double currentTotalBet = 0;
+
+    //TEMP VARIABLES
+    List<ImageAnimation> m_TempList = new List<ImageAnimation>();
+    ImageAnimation anim;
 
     private void Start()
     {
@@ -209,13 +217,16 @@ public class SlotBehaviour : MonoBehaviour
         if (!IsFreeSpin)
         {
             IsFreeSpin = true;
+            uiManager.SwitchFreeSpinMode(true);
             ToggleButtonGrp(false);
+
             if (NormalImage_Object) NormalImage_Object.SetActive(false);
+            if (Slider_Object) Slider_Object.SetActive(true);
+
             if (TotalSpins_Text) TotalSpins_Text.text = spins.ToString();
             if (SpinUtilised_Text) SpinUtilised_Text.text = spins.ToString();
             if (SpinLeft_Text) SpinLeft_Text.text = "0";
             if (FreeSpin_Slider) FreeSpin_Slider.value = 1;
-            if (Slider_Object) Slider_Object.SetActive(true);
 
             if (FreeSpinRoutine != null)
             {
@@ -225,6 +236,27 @@ public class SlotBehaviour : MonoBehaviour
             FreeSpinRoutine = StartCoroutine(FreeSpinCoroutine(spins));
 
         }
+    }
+
+    private IEnumerator FreeSpinCoroutine(int spinchances)
+    {
+        int i = 0;
+        float step = 1f / spinchances;
+        while (i < spinchances)
+        {
+            uiManager.UpdateFreeSpinUI(SocketManager.resultData.freeSpin.freeSpinMultipliers);
+            if (SpinUtilised_Text) SpinUtilised_Text.text = (spinchances - i - 1).ToString();
+            if (SpinLeft_Text) SpinLeft_Text.text = (i + 1).ToString();
+            if (FreeSpin_Slider) FreeSpin_Slider.DOValue(FreeSpin_Slider.value - step, 0.2f);
+            StartSlots(IsAutoSpin);
+            yield return tweenroutine;
+            i++;
+        }
+        if (NormalImage_Object) NormalImage_Object.SetActive(true);
+        if (Slider_Object) Slider_Object.SetActive(false);
+        uiManager.SwitchFreeSpinMode(false);
+        ToggleButtonGrp(true);
+        IsFreeSpin = false;
     }
 
     private void StopAutoSpin()
@@ -245,23 +277,6 @@ public class SlotBehaviour : MonoBehaviour
             StartSlots(IsAutoSpin);
             yield return tweenroutine;
         }
-    }
-
-    private IEnumerator FreeSpinCoroutine(int spinchances)
-    {
-        int i = 0;
-        float step = 1f / spinchances;
-        while (i < spinchances)
-        {
-            if (SpinUtilised_Text) SpinUtilised_Text.text = (spinchances - i - 1).ToString();
-            if (SpinLeft_Text) SpinLeft_Text.text = (i + 1).ToString();
-            if (FreeSpin_Slider) FreeSpin_Slider.DOValue(FreeSpin_Slider.value - step, 0.2f);
-            StartSlots(IsAutoSpin);
-            yield return tweenroutine;
-            i++;
-        }
-        ToggleButtonGrp(true);
-        IsFreeSpin = false;
     }
 
     private IEnumerator StopAutoSpinCoroutine()
@@ -340,22 +355,6 @@ public class SlotBehaviour : MonoBehaviour
         //HACK: To Be Uncommented After Parse Sheet Recieving
         CompareBalance();
     }
-
-
-    //just for testing purposes delete on production
-    //private void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.Space) && SlotStart_Button.interactable)
-    //    {
-    //        StartSlots();
-    //    }
-    //}
-
-    //populate the slots with the values recieved from backend
-    //internal void PopulateInitalSlots(int number, List<int> myvalues)
-    //{
-    //    PopulateSlot(myvalues, number);
-    //}
 
     internal void SetInitialUI()
     {
@@ -477,10 +476,6 @@ public class SlotBehaviour : MonoBehaviour
         }
 
         if (SlotStart_Button) SlotStart_Button.interactable = false;
-        if (TempList.Count > 0)
-        {
-            AnimStoppedProcess();
-        }
         tweenroutine = StartCoroutine(TweenRoutine());
     }
 
@@ -492,6 +487,7 @@ public class SlotBehaviour : MonoBehaviour
             CompareBalance();
             StopAutoSpin();
             yield return new WaitForSeconds(1);
+            ToggleButtonGrp(true);
             yield break;
         }
         StopGameAnimation();
@@ -558,7 +554,12 @@ public class SlotBehaviour : MonoBehaviour
         }
 
         yield return new WaitForSeconds(0.3f);
-        //CheckPayoutLineBackend(SocketManager.resultData.linesToEmit, SocketManager.resultData.FinalsymbolsToEmit, SocketManager.resultData.jackpot);
+
+        if(!IsAutoSpin && !IsFreeSpin && !SocketManager.resultData.freeSpin.isFreeSpin)
+        {
+            m_GambleController.CheckGamble();
+        }
+
         PlayStopAnimation(true);
         KillAllTweens();
 
@@ -571,7 +572,7 @@ public class SlotBehaviour : MonoBehaviour
 
         currentBalance = double.Parse(SocketManager.playerdata.Balance);
 
-        if (IsFreeSpin || SocketManager.resultData.freeSpin.freeSpinCount > 0)
+        if (IsFreeSpin || SocketManager.resultData.freeSpin.isFreeSpin)
         {
             yield return new WaitForSeconds(4);
         }
@@ -579,21 +580,41 @@ public class SlotBehaviour : MonoBehaviour
         CheckBonusGame();
 
         yield return new WaitUntil(() => !CheckPopups);
-        if (!IsAutoSpin)
+
+        if (!IsAutoSpin && !IsFreeSpin)
         {
             ToggleButtonGrp(true);
             IsSpinning = false;
         }
         else
         {
+            yield return new WaitForSeconds(2f);
             IsSpinning = false;
         }
+
         if (SocketManager.resultData.freeSpin.isFreeSpin)
         {
+            if (IsFreeSpin)
+            {
+                IsFreeSpin = false;
+                if (FreeSpinRoutine != null)
+                {
+                    StopCoroutine(FreeSpinRoutine);
+                    FreeSpinRoutine = null;
+                }
+            }
             uiManager.FreeSpinProcess((int)SocketManager.resultData.freeSpin.freeSpinCount);
+            if (IsAutoSpin)
+            {
+                StopAutoSpin();
+                yield return new WaitForSeconds(0.1f);
+            }
         }
     }
 
+    /// <summary>
+    /// HACK: The below method is used to assign the populated images animation sprites so that they could be played when required.
+    /// </summary>
     private void Assign()
     {
         for(int i = 0; i < SocketManager.resultData.winningCombinations.Count; i++)
@@ -609,71 +630,68 @@ public class SlotBehaviour : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// HACK: A Toggling Function that handles the play and stop of the animations on the slotimages
+    /// </summary>
+    /// <param name="m_play"></param>
     private void PlayStopAnimation(bool m_play)
     {
         if (m_play)
         {
-            for (int i = 0; i < Tempimages.Count; i++)
+
+            if (AnimationToggleRoutine == null)
             {
-                for (int j = 0; j < Tempimages[i].slotImages.Count; j++)
-                {
-                    if (Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<ImageAnimation>().textureArray.Count > 0)
-                    {
-                        StartGameAnimation(Tempimages[i].slotImages[j].gameObject);
-                    }
-                }
+                m_Is_Playing_Animation_In_Loop = true;
+                AnimationToggleRoutine = StartCoroutine(PlayCoroutine());
             }
         }
-
-        //if (m_play)
-        //{
-        //    m_Is_Playing_Animation_In_Loop = true;
-
-        //    if (AnimationToggleRoutine == null)
-        //    {
-        //        AnimationToggleRoutine = StartCoroutine(PlayCoroutine());
-        //    }
-        //}
-        //else
-        //{
-        //    if (AnimationToggleRoutine != null)
-        //    {
-        //        StopCoroutine(AnimationToggleRoutine);
-        //    }
-
-        //    m_Is_Playing_Animation_In_Loop = false;
-        //}
+        else
+        {
+            if (AnimationToggleRoutine != null)
+            {
+                StopCoroutine(AnimationToggleRoutine);
+                AnimationToggleRoutine = null;
+                m_Is_Playing_Animation_In_Loop = false;
+                TurnAllMiniImagesOff();
+            }
+        }
     }
 
+    /// <summary>
+    /// HACK: To show multiple combinations in a loop with an delay between first combination and second one.
+    /// </summary>
+    /// <returns></returns>
     private IEnumerator PlayCoroutine()
     {
+        int _Zero = 0;
+        int _One = 0;
         while (m_Is_Playing_Animation_In_Loop)
         {
-            List<ImageAnimation> m_TempList = new List<ImageAnimation>();
             for(int i = 0; i < SocketManager.resultData.winningCombinations.Count; i++)
             {
-                for(int j = 0; j < SocketManager.resultData.winningCombinations[i].positions.Count; j++)
+                Color mycolor = SetRandomBrightColor();
+                for (int j = 0; j < SocketManager.resultData.winningCombinations[i].positions.Count; j++)
                 {
-                    var _Zero = SocketManager.resultData.winningCombinations[i].positions[j][0];
-                    var _One = SocketManager.resultData.winningCombinations[i].positions[j][1];
+                    _Zero = SocketManager.resultData.winningCombinations[i].positions[j][0];
+                    _One = SocketManager.resultData.winningCombinations[i].positions[j][1];
                     int id = SocketManager.resultData.resultSymbols[_Zero][_One];
 
-                    ImageAnimation anim = Tempimages[_One].slotImages[_Zero].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>();
+                    anim = Tempimages[_One].slotImages[_Zero].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>();
                     if (anim.textureArray.Count > 0)
                     {
                         anim.StartAnimation();
-                        m_TempList.Add(anim);
                     }
                     else
                     {
-                        if(anim.transform.parent.GetChild(1).GetComponent<ImageAnimation>().textureArray.Count > 0)
-                        {
-                            anim.transform.parent.GetChild(1).GetComponent<ImageAnimation>().StartAnimation();
-                            m_TempList.Add(anim.transform.parent.GetChild(1).GetComponent<ImageAnimation>());
-                        }
+                        anim.transform.parent.GetChild(1).gameObject.SetActive(true);
+                        anim.transform.parent.GetChild(2).gameObject.SetActive(true);
                     }
+                    Tempimages[_One].MiniImages[_Zero].color = mycolor;
+                    Tempimages[_One].MiniImages[_Zero].gameObject.SetActive(true);
+                    Tempimages[_One].slotImages[_Zero].gameObject.GetComponent<SlotScript>().SetBox(mycolor);
+                    m_TempList.Add(anim);
                 }
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(2f);
                 foreach(var t in m_TempList)
                 {
                     if (t.textureArray.Count > 0)
@@ -682,18 +700,28 @@ public class SlotBehaviour : MonoBehaviour
                     }
                     else
                     {
-                        if(t.transform.parent.GetChild(1).GetComponent<ImageAnimation>().textureArray.Count > 0)
-                        {
-                            t.transform.parent.GetChild(1).GetComponent<ImageAnimation>().StopAnimation();
-                        }
+                        t.transform.parent.GetChild(1).gameObject.SetActive(false);
+                        t.transform.parent.GetChild(2).gameObject.SetActive(false);
                     }
                 }
                 yield return new WaitForSeconds(0.2f);
-                m_TempList.Clear();
-                m_TempList.TrimExcess();
+                TurnAllMiniImagesOff();
             }
             yield return new WaitForSeconds(2f);
         }
+    }
+
+    private void TurnAllMiniImagesOff()
+    {
+        for(int i = 0; i < Tempimages.Count; i++)
+        {
+            for(int j = 0; j < Tempimages[i].MiniImages.Count; j++)
+            {
+                Tempimages[i].MiniImages[j].gameObject.SetActive(false);
+                Tempimages[i].slotImages[j].gameObject.GetComponent<SlotScript>().ResetBox();
+            }
+        }
+        m_TempList.Clear();
     }
 
     private void CompareBalance()
@@ -701,109 +729,19 @@ public class SlotBehaviour : MonoBehaviour
         if (currentBalance < currentTotalBet)
         {
             uiManager.LowBalPopup();
-            if (AutoSpinStart_Button) AutoSpinStart_Button.interactable = false;
-            if (SlotStart_Button) SlotStart_Button.interactable = false;
+            //if (AutoSpinStart_Button) AutoSpinStart_Button.interactable = false;
+            //if (SlotStart_Button) SlotStart_Button.interactable = false;
         }
-        else
-        {
-            if (AutoSpinStart_Button) AutoSpinStart_Button.interactable = true;
-            if (SlotStart_Button) SlotStart_Button.interactable = true;
-        }
+        //else
+        //{
+        //    if (AutoSpinStart_Button) AutoSpinStart_Button.interactable = true;
+        //    if (SlotStart_Button) SlotStart_Button.interactable = true;
+        //}
     }
 
     internal void CallCloseSocket()
     {
         SocketManager.CloseSocket();
-    }
-
-    [SerializeField]
-    private List<int> TempLineIds;
-
-    private IEnumerator slotLineAnim()
-    {
-        int n = 0;
-        if (TempLineIds.Count > 1)
-        {
-            while (n < 5)
-            {
-                List<int> y_anim = null;
-                for (int i = 0; i < TempLineIds.Count; i++)
-                {
-                    y_anim = y_string[TempLineIds[i]]?.Split(',')?.Select(Int32.Parse)?.ToList();
-
-                    Color mycolor = SetRandomBrightColor();
-                    for (int k = 0; k < y_anim.Count; k++)
-                    {
-                        if (Tempimages[k].slotImages[y_anim[k]].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>().currentAnimationState == ImageAnimation.ImageState.PLAYING)
-                        {
-                            Tempimages[k].slotImages[y_anim[k]].gameObject.GetComponent<SlotScript>().SetBox(mycolor);
-                            Tempimages[k].MiniImages[y_anim[k]].color = mycolor;
-                            Tempimages[k].MiniImages[y_anim[k]].gameObject.SetActive(true);
-                        }
-                    }
-                    yield return new WaitForSeconds(3);
-                    for (int k = 0; k < y_anim.Count; k++)
-                    {
-                        if (Tempimages[k].slotImages[y_anim[k]].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>().currentAnimationState == ImageAnimation.ImageState.PLAYING)
-                        {
-                            Tempimages[k].slotImages[y_anim[k]].gameObject.GetComponent<SlotScript>().ResetBox();
-                            Tempimages[k].MiniImages[y_anim[k]].gameObject.SetActive(false);
-                        }
-                    }
-                }
-                for (int i = 0; i < TempLineIds.Count; i++)
-                {
-                    List<int> y_all = null;
-                    y_all = y_string[TempLineIds[i]]?.Split(',')?.Select(Int32.Parse)?.ToList();
-
-                    for (int k = 0; k < y_all.Count; k++)
-                    {
-                        if (Tempimages[k].slotImages[y_all[k]].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>().currentAnimationState == ImageAnimation.ImageState.PLAYING)
-                        {
-                            Tempimages[k].slotImages[y_all[k]].gameObject.GetComponent<SlotScript>().DefaultBox();
-                            Tempimages[k].MiniImages[y_all[k]].color = Color.white;
-                            Tempimages[k].MiniImages[y_all[k]].gameObject.SetActive(true);
-                        }
-                    }
-                }
-                yield return new WaitForSeconds(3);
-                for (int i = 0; i < TempLineIds.Count; i++)
-                {
-                    List<int> y_all = null;
-                    y_all = y_string[TempLineIds[i]]?.Split(',')?.Select(Int32.Parse)?.ToList();
-
-                    for (int k = 0; k < y_all.Count; k++)
-                    {
-                        if (Tempimages[k].slotImages[y_all[k]].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>().currentAnimationState == ImageAnimation.ImageState.PLAYING)
-                        {
-                            Tempimages[k].slotImages[y_all[k]].gameObject.GetComponent<SlotScript>().ResetBox();
-                            Tempimages[k].MiniImages[y_all[k]].gameObject.SetActive(false);
-                        }
-                    }
-                }
-                n++;
-            }
-        }
-        else
-        {
-            List<int> y_all = null;
-            for (int i = 0; i < TempLineIds.Count; i++)
-            {
-                y_all = y_string[TempLineIds[i]]?.Split(',')?.Select(Int32.Parse)?.ToList();
-
-                for (int k = 0; k < y_all.Count; k++)
-                {
-                    if (Tempimages[k].slotImages[y_all[k]].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>().currentAnimationState == ImageAnimation.ImageState.PLAYING)
-                    {
-                        Tempimages[k].slotImages[y_all[k]].gameObject.GetComponent<SlotScript>().DefaultBox();
-                        Tempimages[k].MiniImages[y_all[k]].color = Color.white;
-                        Tempimages[k].MiniImages[y_all[k]].gameObject.SetActive(true);
-                    }
-                }
-            }
-            yield return new WaitForSeconds(9);
-        }
-        AnimStoppedProcess();
     }
 
     Color SetRandomBrightColor()
@@ -824,13 +762,13 @@ public class SlotBehaviour : MonoBehaviour
     {
         CheckPopups = false;
 
-        //if (SocketManager.resultData.freeSpins.count > 0) 
-        //{
-        //    if(IsAutoSpin)
-        //    {
-        //        StopAutoSpin();
-        //    }
-        //}
+        if (SocketManager.resultData.freeSpin.isFreeSpin)
+        {
+            if (IsAutoSpin)
+            {
+                StopAutoSpin();
+            }
+        }
     }
 
     void ToggleButtonGrp(bool toggle)
@@ -871,97 +809,25 @@ public class SlotBehaviour : MonoBehaviour
     {
         DOTween.Kill("fadeLoop");
         PlayStopAnimation(false);
-        for (int i = 0; i < TempList.Count; i++)
+        for(int i = 0; i < Tempimages.Count; i++)
         {
-            if (TempList[i].textureArray.Count > 0)
+            for(int j = 0; j < Tempimages[i].slotImages.Count; j++)
             {
-                TempList[i].StopAnimation();
-                TempList[i].textureArray.Clear();
-                TempList[i].textureArray.TrimExcess();
-            }
-            else
-            {
-                TempList[i].currentAnimationState = ImageAnimation.ImageState.NONE;
-                Color newColor = TempListImg[i].color;
-                newColor.a = 1.0f;
-                TempListImg[i].color = newColor;
-            }
-        }
-    }
-
-    //generate the payout lines generated 
-    private void CheckPayoutLineBackend(List<int> LineId, List<string> points_AnimString, double jackpot = 0)
-    {
-        if (LineId.Count > 0)
-        {
-            if (Textroutine != null)
-            {
-                StopCoroutine(Textroutine);
-                Textroutine = null;
-            }
-            Textroutine = StartCoroutine(FlickerText("You Win !!!"));
-            if (audioController) audioController.PlayWLAudio("win");
-
-            if (jackpot > 0)
-            {
-                for (int i = 0; i < Tempimages.Count; i++)
+                ImageAnimation temp_Anim = Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<ImageAnimation>();
+                if (temp_Anim.textureArray.Count > 0)
                 {
-                    for (int k = 0; k < Tempimages[i].slotImages.Count; k++)
-                    {
-                        StartGameAnimation(Tempimages[i].slotImages[k].gameObject);
-                    }
+                    temp_Anim.StopAnimation();
+                    temp_Anim.textureArray.Clear();
+                    temp_Anim.textureArray.TrimExcess();
+                }
+                else
+                {
+                    temp_Anim.currentAnimationState = ImageAnimation.ImageState.NONE;
+                    //Color newColor = TempListImg[i].color;
+                    //newColor.a = 1.0f;
+                    //TempListImg[i].color = newColor;
                 }
             }
-            else
-            {
-                PlayStopAnimation(true);
-            }
-            if (SlotAnimRoutine != null)
-            {
-                StopCoroutine(SlotAnimRoutine);
-                SlotAnimRoutine = null;
-            }
-            SlotAnimRoutine = StartCoroutine(slotLineAnim());
-        }
-        else
-        {
-            if(Textroutine != null)
-            {
-                StopCoroutine(Textroutine);
-                Textroutine = null;
-            }
-            Textroutine = StartCoroutine(FlickerText("Better luck next time !!!"));
-            if (audioController) audioController.PlayWLAudio("lose");
-        }
-    }
-
-    private void AnimStoppedProcess()
-    {
-        for (int i = 0; i < TempLineIds.Count; i++)
-        {
-            List<int> y_all = y_string[TempLineIds[i]]?.Split(',')?.Select(Int32.Parse)?.ToList();
-
-            for (int k = 0; k < y_all.Count; k++)
-            {
-                if (Tempimages[k].slotImages[y_all[k]].transform.GetChild(0).gameObject.GetComponent<ImageAnimation>().currentAnimationState == ImageAnimation.ImageState.PLAYING)
-                {
-                    Tempimages[k].slotImages[y_all[k]].gameObject.GetComponent<SlotScript>().ResetBox();
-                    Tempimages[k].MiniImages[y_all[k]].gameObject.SetActive(false);
-                }
-            }
-        }
-        TempLineIds.Clear();
-        TempLineIds.TrimExcess();
-        StopGameAnimation();
-    }
-
-    //generate the result matrix
-    private void GenerateMatrix(int value)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            Tempimages[value].slotImages.Add(images[value].slotImages[images[value].slotImages.Count - 5 + j]);
-            Tempimages[value].slotRects.Add(images[value].slotRects[images[value].slotRects.Count - 5 + j]);
         }
     }
 

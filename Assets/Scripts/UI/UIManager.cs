@@ -15,6 +15,10 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private GameObject MainPopup_Object;
 
+    [Header("DoTween Manager")]
+    [SerializeField]
+    private DOTweenUIManager m_DoTweenUIManager;
+
     [Header("Paytable Popup")]
     [SerializeField]
     private GameObject m_Paytable_Object;
@@ -38,6 +42,15 @@ public class UIManager : MonoBehaviour
     private TMP_Text Free_Text;
     [SerializeField]
     private Button FreeSpin_Button;
+    private List<int> m_TempValues = new List<int>() { 0, 0, 0, 0, 0 };
+
+    [Header("Title View References")]
+    [SerializeField]
+    private Image m_Title_Image;
+    [SerializeField]
+    private Transform m_FreeSpinHolder;
+    [SerializeField]
+    private Image[] m_FreeSpinIcons;
 
     [Header("Disconnection Popup")]
     [SerializeField]
@@ -165,6 +178,14 @@ public class UIManager : MonoBehaviour
         isSound = true;
     }
 
+    //private void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.Space))
+    //        SwitchFreeSpinMode(true);
+    //    if (Input.GetKeyDown(KeyCode.V))
+    //        SwitchFreeSpinMode(false);
+    //}
+
     private void StartFreeSpins(int spins)
     {
         if (MainPopup_Object) MainPopup_Object.SetActive(false);
@@ -192,6 +213,41 @@ public class UIManager : MonoBehaviour
         {
             if(!ADPopup_Object.activeSelf)OpenPopup(DisconnectPopup_Object);
         }
+    }
+
+    internal void SwitchFreeSpinMode(bool m_config)
+    {
+        if (m_config)
+        {
+            m_Title_Image.gameObject.SetActive(false);
+            m_FreeSpinHolder.gameObject.SetActive(true);
+        }
+        else
+        {
+            m_Title_Image.gameObject.SetActive(true);
+            m_FreeSpinHolder.gameObject.SetActive(false);
+        }
+    }
+
+    internal void UpdateFreeSpinUI(List<int> m_values)
+    {
+        for(int i = 0; i < m_values.Count; i++)
+        {
+            if(m_values[i] != m_TempValues[i])
+            {
+                m_FreeSpinIcons[i].transform.GetChild(0).GetComponent<TMP_Text>().text = "X" + m_values[i].ToString();
+                DOTweenUIManager.Instance.Jump(m_FreeSpinIcons[i].rectTransform, 25f, 1, 1f);
+                DOTweenUIManager.Instance.PopIn(m_FreeSpinIcons[i].rectTransform, 1f);
+                DOTweenUIManager.Instance.BounceIn(m_FreeSpinIcons[i].transform.GetChild(0).transform.GetComponent<RectTransform>(), 1f);
+            }
+            else
+            {
+                m_FreeSpinIcons[i].transform.GetChild(0).GetComponent<TMP_Text>().text = "X" + m_values[i].ToString();
+            }
+        }
+        m_TempValues.Clear();
+        m_TempValues.TrimExcess();
+        m_TempValues = new List<int>(m_values);
     }
 
     internal void ADfunction()
