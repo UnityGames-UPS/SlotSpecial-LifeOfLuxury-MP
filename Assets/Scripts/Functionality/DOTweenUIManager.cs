@@ -98,9 +98,20 @@ public class DOTweenUIManager : MonoBehaviour
     }
 
     // 12. Rotate UI Element (like a spinning icon)
-    internal void RotateUI(RectTransform uiElement, float duration, float rotationAngle = 360f)
+    internal void RotateUI(RectTransform uiElement, string axis, float duration, float rotationAngle = 360f)
     {
-        uiElement.DORotate(new Vector3(0, 0, rotationAngle), duration, RotateMode.FastBeyond360);
+        switch (axis.ToUpper())
+        {
+            case "X":
+                uiElement.DORotate(new Vector3(rotationAngle, 0, 0), duration, RotateMode.FastBeyond360);
+                break;
+            case "Y":
+                uiElement.DORotate(new Vector3(0, rotationAngle, 0), duration, RotateMode.FastBeyond360);
+                break;
+            case "Z":
+                uiElement.DORotate(new Vector3(0, 0, rotationAngle), duration, RotateMode.FastBeyond360);
+                break;
+        }
     }
 
     // 13. Pulse (scaling up and down)

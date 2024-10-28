@@ -26,10 +26,12 @@ public class SocketIOManager : MonoBehaviour
     internal UIData initUIData = null;
     internal GameData resultData = null;
     internal PlayerData playerdata = null;
+    internal Message gambleData = null;
     [SerializeField]
     internal List<string> bonusdata = null;
     //WebSocket currentSocket = null;
     internal bool isResultdone = false;
+    internal bool isGambledone = false;
 
     private SocketManager manager;
 
@@ -335,19 +337,11 @@ public class SocketIOManager : MonoBehaviour
                     isResultdone = true;
                     break;
                 }
-            case "GAMBLEINIT":
+            case "GambleResult":
                 {
-                    Debug.Log(string.Concat("<color=red><b>", "Gamble Initialized", "</b></color>"));
-                    break;
-                }
-            case "GAMBLERESULT":
-                {
-                    Debug.Log(string.Concat("<color=red><b>", "Gamble Result", "</b></color>"));
-                    break;
-                }
-            case "GAMEBLECOLLECT":
-                {
-                    Debug.Log(string.Concat("<color=red><b>", "Gamble Collect", "</b></color>"));
+                    Debug.Log(string.Concat("<color=yellow><b>", jsonObject, "</b></color>"));
+                    gambleData = myData.message;
+                    isGambledone = true;
                     break;
                 }
             case "ExitUser":
@@ -555,6 +549,11 @@ public class Message
     public UIData UIData { get; set; }
     public PlayerData PlayerData { get; set; }
     public List<string> BonusData { get; set; }
+
+    public bool playerWon { get; set; }
+    public double currentWinning { get; set; }
+    public int cardId { get; set; }
+    public double balance { get; set; }
 }
 
 [Serializable]

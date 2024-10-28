@@ -38,6 +38,8 @@ public class SlotBehaviour : MonoBehaviour
     [SerializeField]
     private Button SlotStart_Button;
     [SerializeField]
+    private Button Take_Button;
+    [SerializeField]
     private Button AutoSpinStart_Button;
     [SerializeField]
     private Button AutoSpinStop_Button;
@@ -102,6 +104,13 @@ public class SlotBehaviour : MonoBehaviour
     [SerializeField]
     private TMP_Text MainDisplayText;
 
+    [Header("Bar Text References")]
+    [SerializeField]
+    private TMP_Text m_L_Bar;
+    [SerializeField]
+    private TMP_Text m_R_Bar;
+
+    [Header("UI Manager References")]
     [SerializeField]
     private UIManager uiManager;
 
@@ -156,6 +165,9 @@ public class SlotBehaviour : MonoBehaviour
         IsAutoSpin = false;
         if (SlotStart_Button) SlotStart_Button.onClick.RemoveAllListeners();
         if (SlotStart_Button) SlotStart_Button.onClick.AddListener(delegate { StartSlots(); });
+
+        if (Take_Button) Take_Button.onClick.RemoveAllListeners();
+        if (Take_Button) Take_Button.onClick.AddListener(() => { m_GambleController.ResetToDefault(); });
 
         if (BetPlus_Button) BetPlus_Button.onClick.RemoveAllListeners();
         if (BetPlus_Button) BetPlus_Button.onClick.AddListener(delegate { ChangeBet(true); });
@@ -479,6 +491,19 @@ public class SlotBehaviour : MonoBehaviour
         tweenroutine = StartCoroutine(TweenRoutine());
     }
 
+    internal void UpdateBottomUI(bool won, double win, double balance)
+    {
+        currentBalance = balance;
+
+        Balance_text.text = currentBalance.ToString("F2");
+        TotalWin_text.text = win.ToString("F2");
+
+        if (!won)
+        {
+            m_GambleController.ResetToDefault();
+        }
+    }
+
     //manage the Routine for spinning of the slots
     private IEnumerator TweenRoutine()
     {
@@ -555,14 +580,11 @@ public class SlotBehaviour : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        if(!IsAutoSpin && !IsFreeSpin && !SocketManager.resultData.freeSpin.isFreeSpin)
-        {
-            m_GambleController.CheckGamble();
-        }
-
         PlayStopAnimation(true);
         KillAllTweens();
 
+        m_L_Bar.text = SocketManager.resultData.winningCombinations.Count.ToString();
+        m_R_Bar.text = SocketManager.resultData.winningCombinations.Count.ToString();
 
         CheckPopups = true;
 
@@ -571,6 +593,14 @@ public class SlotBehaviour : MonoBehaviour
         if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
 
         currentBalance = double.Parse(SocketManager.playerdata.Balance);
+
+        if(!IsAutoSpin && !IsFreeSpin && !SocketManager.resultData.freeSpin.isFreeSpin && SocketManager.playerdata.currentWining > 0)
+        {
+            m_GambleController.CheckGamble();
+
+            SlotStart_Button.gameObject.SetActive(false);
+            Take_Button.gameObject.SetActive(true);
+        }
 
         if (IsFreeSpin || SocketManager.resultData.freeSpin.isFreeSpin)
         {
