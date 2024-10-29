@@ -84,6 +84,14 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Button NoQuit_Button;
 
+    [Header("Big Win Popup")]
+    [SerializeField]
+    private GameObject WinPopup_Object;
+
+    [Header("5 Of A Kind")]
+    [SerializeField]
+    private GameObject Five_Of_A_Kind_Object;
+
     [Header("Settings Popup")]
     [SerializeField]
     private Button Settings_Button;
@@ -122,18 +130,18 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         if (GameExit_Button) GameExit_Button.onClick.RemoveAllListeners();
-        if (GameExit_Button) GameExit_Button.onClick.AddListener(delegate { OpenPopup(QuitPopup_Object); });
+        if (GameExit_Button) GameExit_Button.onClick.AddListener(delegate { OpenPopup(QuitPopup_Object); audioController.PlayButtonAudio(); });
 
         if (audioController) audioController.ToggleMute(false);
 
         if (Right_Button) Right_Button.onClick.RemoveAllListeners();
-        if (Right_Button) Right_Button.onClick.AddListener(delegate { ToggleSlides(true); });
+        if (Right_Button) Right_Button.onClick.AddListener(delegate { ToggleSlides(true); audioController.PlayButtonAudio(); });
 
         if (Left_Button) Left_Button.onClick.RemoveAllListeners();
-        if (Left_Button) Left_Button.onClick.AddListener(delegate { ToggleSlides(false); });
+        if (Left_Button) Left_Button.onClick.AddListener(delegate { ToggleSlides(false); audioController.PlayButtonAudio(); });
 
         if (Paytable_Button) Paytable_Button.onClick.RemoveAllListeners();
-        if (Paytable_Button) Paytable_Button.onClick.AddListener(delegate { OpenClosePaytable(true); });
+        if (Paytable_Button) Paytable_Button.onClick.AddListener(delegate { OpenClosePaytable(true); audioController.PlayButtonAudio(); });
 
         if (ClosePayTable_Button) ClosePayTable_Button.onClick.RemoveAllListeners();
         if (ClosePayTable_Button) ClosePayTable_Button.onClick.AddListener(delegate
@@ -142,37 +150,38 @@ public class UIManager : MonoBehaviour
             if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(false);
             slideCounter = 0;
             if (InfoSlides[slideCounter]) InfoSlides[slideCounter].SetActive(true);
+            audioController.PlayButtonAudio();
         });
 
         if (Settings_Button) Settings_Button.onClick.RemoveAllListeners();
-        if (Settings_Button) Settings_Button.onClick.AddListener(OpenSettings);
+        if (Settings_Button) Settings_Button.onClick.AddListener(delegate { OpenSettings(); audioController.PlayButtonAudio(); });
 
-        if (SettingsCloseFull_Button) SettingsCloseFull_Button.onClick.RemoveAllListeners();
-        if (SettingsCloseFull_Button) SettingsCloseFull_Button.onClick.AddListener(CloseSettings);
+        //if (SettingsCloseFull_Button) SettingsCloseFull_Button.onClick.RemoveAllListeners();
+        //if (SettingsCloseFull_Button) SettingsCloseFull_Button.onClick.AddListener(delegate { CloseSettings(); audioController.PlayButtonAudio(); });
 
         if (SettingsClose_Button) SettingsClose_Button.onClick.RemoveAllListeners();
-        if (SettingsClose_Button) SettingsClose_Button.onClick.AddListener(CloseSettings);
+        if (SettingsClose_Button) SettingsClose_Button.onClick.AddListener(delegate { CloseSettings(); audioController.PlayButtonAudio(); });
 
         if (Music_Toggle) Music_Toggle.onValueChanged.RemoveAllListeners();
-        if (Music_Toggle) Music_Toggle.onValueChanged.AddListener(ToggleMusic);
+        if (Music_Toggle) Music_Toggle.onValueChanged.AddListener(delegate { ToggleMusic(Music_Toggle.isOn); audioController.PlayButtonAudio(); });
 
         if (Sound_Toggle) Sound_Toggle.onValueChanged.RemoveAllListeners();
-        if (Sound_Toggle) Sound_Toggle.onValueChanged.AddListener(ToggleSound);
+        if (Sound_Toggle) Sound_Toggle.onValueChanged.AddListener(delegate { ToggleSound(Sound_Toggle.isOn); audioController.PlayButtonAudio(); });
 
         if (NoQuit_Button) NoQuit_Button.onClick.RemoveAllListeners();
-        if (NoQuit_Button) NoQuit_Button.onClick.AddListener(delegate { if (!isExit) { ClosePopup(QuitPopup_Object); } });
+        if (NoQuit_Button) NoQuit_Button.onClick.AddListener(delegate { if (!isExit) { ClosePopup(QuitPopup_Object); } audioController.PlayButtonAudio(); });
 
         if (YesQuit_Button) YesQuit_Button.onClick.RemoveAllListeners();
-        if (YesQuit_Button) YesQuit_Button.onClick.AddListener(CallOnExitFunction);
+        if (YesQuit_Button) YesQuit_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
 
         if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.RemoveAllListeners();
-        if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.AddListener(CallOnExitFunction);
+        if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
 
         if (CloseAD_Button) CloseAD_Button.onClick.RemoveAllListeners();
-        if (CloseAD_Button) CloseAD_Button.onClick.AddListener(CallOnExitFunction);
+        if (CloseAD_Button) CloseAD_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
 
         if (LBExit_Button) LBExit_Button.onClick.RemoveAllListeners();
-        if (LBExit_Button) LBExit_Button.onClick.AddListener(delegate { ClosePopup(LBPopup_Object); });
+        if (LBExit_Button) LBExit_Button.onClick.AddListener(delegate { ClosePopup(LBPopup_Object); audioController.PlayButtonAudio(); });
 
         isMusic = true;
         isSound = true;
@@ -229,6 +238,37 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    internal void PopulateWin(int value, double amount)
+    {
+        switch (value)
+        {
+            case 1:
+                StartPopupAnim(amount, WinPopup_Object);
+                break;
+            case 2:
+                StartPopupAnim(amount, Five_Of_A_Kind_Object);
+                break;
+        }
+    }
+
+    private void StartPopupAnim(double amount, GameObject m_object)
+    {
+        int initAmount = 0;
+        if (m_object) m_object.SetActive(true);
+        if (MainPopup_Object) MainPopup_Object.SetActive(true);
+
+        //DOTween.To(() => initAmount, (val) => initAmount = val, (int)amount, 5f).OnUpdate(() =>
+        //{
+        //    if (Win_Text) Win_Text.text = initAmount.ToString();
+        //});
+
+        DOVirtual.DelayedCall(6f, () =>
+        {
+            ClosePopup(m_object);
+            slotManager.CheckPopups = false;
+        });
+    }
+
     internal void UpdateFreeSpinUI(List<int> m_values)
     {
         for(int i = 0; i < m_values.Count; i++)
@@ -277,27 +317,28 @@ public class UIManager : MonoBehaviour
 
     private void PopulateSymbolsPayout(Paylines paylines)
     {
-        //for (int i = 0; i < paylines.symbols.Count; i++)
-        //{
-        //    string text = null;
-        //    if (paylines.symbols[i].multiplier._5x != 0)
-        //    {
-        //        text += "<color=white>5</color>  " + paylines.symbols[i].multiplier._5x.ToString("f2");
-        //    }
-        //    if (paylines.symbols[i].multiplier._4x != 0)
-        //    {
-        //        text += "\n<color=white>4</color>  " + paylines.symbols[i].multiplier._4x.ToString("f2");
-        //    }
-        //    if (paylines.symbols[i].multiplier._3x != 0)
-        //    {
-        //        text += "\n<color=white>3</color>  " + paylines.symbols[i].multiplier._3x.ToString("f2");
-        //    }
-        //    if (paylines.symbols[i].multiplier._2x != 0)
-        //    {
-        //        text += "\n<color=white>2</color>  " + paylines.symbols[i].multiplier._2x.ToString("f2");
-        //    }
-        //    if (SymbolsText[i]) SymbolsText[i].text = text;
-        //}
+        for (int i = 0; i < paylines.symbols.Count - 2; i++)
+        {
+            string text = null;
+            Debug.Log(paylines.symbols[i].Multiplier[0][0]);
+            if (paylines.symbols[i].Multiplier[0][0] != 0)
+            {
+                text += "<color=white>5</color>  " + paylines.symbols[i].Multiplier[0][0].ToString("f2");
+            }
+            if (paylines.symbols[i].Multiplier[0][0] != 0)
+            {
+                text += "\n<color=white>4</color>  " + paylines.symbols[i].Multiplier[1][0].ToString("f2");
+            }
+            if (paylines.symbols[i].Multiplier[0][0] != 0)
+            {
+                text += "\n<color=white>3</color>  " + paylines.symbols[i].Multiplier[2][0].ToString("f2");
+            }
+            //if (paylines.symbols[i].Multiplier[0][0] != 0)
+            //{
+            //    text += "\n<color=white>2</color>  " + paylines.symbols[i].Multiplier[0][0].ToString("f2");
+            //}
+            if (SymbolsText[i]) SymbolsText[i].text = text;
+        }
     }
 
     private void CallOnExitFunction()
@@ -309,13 +350,16 @@ public class UIManager : MonoBehaviour
 
     private void OpenSettings()
     {
-        if (SettingsCloseFull_Button) SettingsCloseFull_Button.gameObject.SetActive(true);
+        //if (SettingsCloseFull_Button) SettingsCloseFull_Button.gameObject.SetActive(true);
         if (SettingMainPanel) SettingMainPanel.SetActive(true);
-
+        Settings_Button.interactable = false;
+        SettingsClose_Button.interactable = false;
         if (SettingPanel_RT) SettingPanel_RT.DOAnchorPosX(SettingPanel_RT.anchoredPosition.x + 700, 0.3f).OnComplete(() =>
         {
             if (SettingsClose_Button) SettingsClose_Button.gameObject.SetActive(true);
             if (Settings_Button) Settings_Button.gameObject.SetActive(false);
+            Settings_Button.interactable = true;
+            SettingsClose_Button.interactable = true;
         }); ;
 
         for (int i = 0; i < Misc_RT.Length; i++)
@@ -326,8 +370,9 @@ public class UIManager : MonoBehaviour
 
     private void CloseSettings()
     {
-        if (SettingsCloseFull_Button) SettingsCloseFull_Button.gameObject.SetActive(false);
-
+        //if (SettingsCloseFull_Button) SettingsCloseFull_Button.gameObject.SetActive(false);
+        Settings_Button.interactable = false;
+        SettingsClose_Button.interactable = false;
         for (int i = 0; i < Misc_RT.Length; i++)
         {
             Misc_RT[i].DOScale(Vector3.one, 0.3f);
@@ -338,6 +383,8 @@ public class UIManager : MonoBehaviour
             SettingMainPanel.SetActive(false);
             Settings_Button.gameObject.SetActive(true);
             SettingsClose_Button.gameObject.SetActive(false);
+            Settings_Button.interactable = true;
+            SettingsClose_Button.interactable = true;
         });
 
     }

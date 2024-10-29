@@ -76,14 +76,6 @@ public class GambleController : MonoBehaviour
         AssignUpperSprites();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            PushIndex(2);
-        }
-    }
-
     internal void ResetToDefault()
     {
         if (m_Is_Gambling)
@@ -182,6 +174,7 @@ public class GambleController : MonoBehaviour
         m_ResultCard.gameObject.SetActive(true);
 
         m_ResultCard.sprite = m_Card_Sprites[id];
+        PushIndex(id);
         m_SlotBehaviour.UpdateBottomUI(won, win, balance);
     }
 
