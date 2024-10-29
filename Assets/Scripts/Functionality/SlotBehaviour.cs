@@ -403,7 +403,7 @@ public class SlotBehaviour : MonoBehaviour
     {
         animScript.textureArray.Clear();
         animScript.textureArray.TrimExcess();
-        animScript.AnimationSpeed = 36f;
+        animScript.AnimationSpeed = 15f;
         switch (val)
         {
             case 0:
@@ -441,14 +441,14 @@ public class SlotBehaviour : MonoBehaviour
                 {
                     animScript.textureArray.Add(FiveStar_Sprite[i]);
                 }
-                animScript.AnimationSpeed = 96f;
+                //animScript.AnimationSpeed = 20f;
                 break;
             case 12:
                 for (int i = 0; i < Bottle_Sprite.Length; i++)
                 {
                     animScript.textureArray.Add(Bottle_Sprite[i]);
                 }
-                animScript.AnimationSpeed = 60f;
+                //animScript.AnimationSpeed = 20f;
                 break;
             default:
                     break;
@@ -585,8 +585,8 @@ public class SlotBehaviour : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        PlayStopAnimation(true);
         KillAllTweens();
+        PlayStopAnimation(true);
 
         if (audioController) audioController.PlaySpinAudio(false);
         CheckSpinAudio = false;
