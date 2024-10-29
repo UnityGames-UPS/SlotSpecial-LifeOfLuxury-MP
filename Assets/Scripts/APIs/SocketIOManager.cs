@@ -10,42 +10,99 @@ using System.Linq;
 using Newtonsoft.Json;
 using Best.SocketIO;
 using Best.SocketIO.Events;
+using Newtonsoft.Json.Linq;
+using System.Runtime.Serialization;
+using Best.HTTP.Shared;
 
 public class SocketIOManager : MonoBehaviour
 {
     [SerializeField]
     private SlotBehaviour slotManager;
 
+    [SerializeField]
+    private UIManager uiManager;
+
     internal GameData initialData = null;
     internal UIData initUIData = null;
     internal GameData resultData = null;
     internal PlayerData playerdata = null;
+    internal Message gambleData = null;
     [SerializeField]
     internal List<string> bonusdata = null;
+    //WebSocket currentSocket = null;
+    internal bool isResultdone = false;
+    internal bool isGambledone = false;
 
     private SocketManager manager;
 
-    [SerializeField]
-    internal JSHandler _jsManager;
-
-    [SerializeField]
-    private string SocketURI;
+    protected string SocketURI = null;
+    protected string TestSocketURI = "http://localhost:5000/";
+    //protected string TestSocketURI = "https://game-crm-rtp-backend.onrender.com/";
+    //protected string TestSocketURI = "https://bpgp8vng-5000.inc1.devtunnels.ms/";
+    //protected string TestSocketURI = "https://7p68wzhv-5000.inc1.devtunnels.ms/";
 
     [SerializeField]
     private string testToken;
-    internal bool isResultdone = false;
 
-    protected string gameID = "SL-LOL";
+    protected string gameID = "";
+    internal bool isLoaded = false;
+    internal bool SetInit = false;
+
+    private const int maxReconnectionAttempts = 6;
+    private readonly TimeSpan reconnectionDelay = TimeSpan.FromSeconds(10);
+
+    private void Awake()
+    {
+        //Debug.unityLogger.logEnabled = false;
+        isLoaded = false;
+        SetInit = false;
+    }
 
     private void Start()
     {
+        //OpenWebsocket();
+
+        //HACK: To Be Uncommented When To Start The Game By Connecting Backend
         OpenSocket();
     }
-    void ReceiveAuthToken(string authToken)
+
+    #region GAMBLE GAME
+    internal void StartGambleGame()
     {
-        Debug.Log("Received authToken: " + authToken);
-        // Do something with the authToken
-        myAuth = authToken;
+        GambleData data = new GambleData();
+        data.id = "GAMBLEINIT";
+        string json = JsonUtility.ToJson(data);
+        SendDataWithNamespace("message", json);
+    }
+
+    internal void SelectGambleCard(string m_red_black)
+    {
+        GambleResultData data = new GambleResultData();
+        data.id = "GAMBLERESULT";
+        data.cardType = m_red_black.ToUpper();
+        string json = JsonUtility.ToJson(data);
+        SendDataWithNamespace("message", json);
+    }
+
+    internal void CollectGambledAmount()
+    {
+        GambleData data = new GambleData();
+        data.id = "GAMBLECOLLECT";
+        string json = JsonUtility.ToJson(data);
+        SendDataWithNamespace("message", json);
+    }
+    #endregion
+
+    void ReceiveAuthToken(string jsonData)
+    {
+        Debug.Log("Received data: " + jsonData);
+
+        // Parse the JSON data
+        var data = JsonUtility.FromJson<AuthTokenData>(jsonData);
+        SocketURI = data.socketURL;
+        myAuth = data.cookie;
+
+        // Proceed with connecting to the server using myAuth and socketURL
     }
 
     string myAuth = null;
@@ -54,46 +111,31 @@ public class SocketIOManager : MonoBehaviour
     {
         // Create and setup SocketOptions
         SocketOptions options = new SocketOptions();
-        options.AutoConnect = false;
+        options.ReconnectionAttempts = maxReconnectionAttempts;
+        options.ReconnectionDelay = reconnectionDelay;
+        options.Reconnection = true;
 
         Application.ExternalCall("window.parent.postMessage", "authToken", "*");
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-        _jsManager.RetrieveAuthToken("token", authToken =>
-        {
-            if (!string.IsNullOrEmpty(authToken))
-            {
-                Debug.Log("Auth token is " + authToken);
-                Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
-                {
-                    return new
-                    {
-                        token = authToken
-                    };
-                };
-                options.Auth = authFunction;
-                // Proceed with connecting to the server
-                SetupSocketManager(options);
-            }
-            else
-            {
-                Application.ExternalEval(@"
-                window.addEventListener('message', function(event) {
-                    if (event.data.type === 'authToken') {
-                        // Send the message to Unity
-                        SendMessage('SocketManager', 'ReceiveAuthToken', event.data.cookie);
-                    }});");
-
-                // Start coroutine to wait for the auth token
-                StartCoroutine(WaitForAuthToken(options));
-            }
-        });
+        Application.ExternalEval(@"
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'authToken') {
+                    var combinedData = JSON.stringify({
+                        cookie: event.data.cookie,
+                        socketURL: event.data.socketURL
+                    });
+                    // Send the combined data to Unity
+                    SendMessage('SocketManager', 'ReceiveAuthToken', combinedData);
+                }});");
+        StartCoroutine(WaitForAuthToken(options));
 #else
         Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
         {
             return new
             {
-                token = testToken
+                token = testToken,
+                gameId = gameID
             };
         };
         options.Auth = authFunction;
@@ -102,20 +144,28 @@ public class SocketIOManager : MonoBehaviour
 #endif
     }
 
+
     private IEnumerator WaitForAuthToken(SocketOptions options)
     {
         // Wait until myAuth is not null
         while (myAuth == null)
         {
+            Debug.Log("My Auth is null");
             yield return null;
         }
-
+        while (SocketURI == null)
+        {
+            Debug.Log("My Socket is null");
+            yield return null;
+        }
+        Debug.Log("My Auth is not null");
         // Once myAuth is set, configure the authFunction
         Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
         {
             return new
             {
-                token = myAuth
+                token = myAuth,
+                gameId = gameID
             };
         };
         options.Auth = authFunction;
@@ -129,28 +179,42 @@ public class SocketIOManager : MonoBehaviour
     private void SetupSocketManager(SocketOptions options)
     {
         // Create and setup SocketManager
+#if UNITY_EDITOR
+        this.manager = new SocketManager(new Uri(TestSocketURI), options);
+#else
         this.manager = new SocketManager(new Uri(SocketURI), options);
-
+#endif
         // Set subscriptions
         this.manager.Socket.On<ConnectResponse>(SocketIOEventTypes.Connect, OnConnected);
         this.manager.Socket.On<string>(SocketIOEventTypes.Disconnect, OnDisconnected);
         this.manager.Socket.On<string>(SocketIOEventTypes.Error, OnError);
         this.manager.Socket.On<string>("message", OnListenEvent);
-
+        this.manager.Socket.On<bool>("socketState", OnSocketState);
+        this.manager.Socket.On<string>("internalError", OnSocketError);
+        this.manager.Socket.On<string>("alert", OnSocketAlert);
+        this.manager.Socket.On<string>("AnotherDevice", OnSocketOtherDevice);
         // Start connecting to the server
-        this.manager.Open();
     }
 
     // Connected event handler implementation
     void OnConnected(ConnectResponse resp)
     {
         Debug.Log("Connected!");
-        InitRequest("AUTH");
+        SendPing();
     }
 
     private void OnDisconnected(string response)
     {
         Debug.Log("Disconnected from the server");
+        //if (maxReconnectionAttempts <= this.manager.ReconnectAttempts)
+        //{
+        StopAllCoroutines();
+        uiManager.DisconnectionPopup(false);
+        //}
+        //else
+        //{
+        //    uiManager.DisconnectionPopup(false);
+        //}
     }
 
     private void OnError(string response)
@@ -160,24 +224,61 @@ public class SocketIOManager : MonoBehaviour
 
     private void OnListenEvent(string data)
     {
-        Debug.Log("Received some_event with data: " + data);
+        Debug.Log(string.Concat("<color=blue><b>", "Received some_event with data: " + data, "</b></color>"));
         ParseResponse(data);
     }
 
-    private void InitRequest(string eventName)
+    private void OnSocketState(bool state)
     {
-        InitData message = new InitData();
-        message.Data = new AuthData();
-        message.Data.GameID = gameID;
-        message.id = "Auth";
-        // Serialize message data to JSON
-        string json = JsonUtility.ToJson(message);
-        Debug.Log(json);
+        if (state)
+        {
+            Debug.Log("my state is " + state);
+        }
+        else
+        {
+
+        }
+    }
+    private void OnSocketError(string data)
+    {
+        Debug.Log("Received error with data: " + data);
+    }
+    private void OnSocketAlert(string data)
+    {
+        Debug.Log("Received alert with data: " + data);
+    }
+
+    private void OnSocketOtherDevice(string data)
+    {
+        Debug.Log("Received Device Error with data: " + data);
+        uiManager.ADfunction();
+    }
+
+    private void SendPing()
+    {
+        InvokeRepeating("AliveRequest", 0f, 3f);
+    }
+
+    private void AliveRequest()
+    {
+        SendDataWithNamespace("YES I AM ALIVE");
+    }
+
+    private void SendDataWithNamespace(string eventName, string json = null)
+    {
         // Send the message
         if (this.manager.Socket != null && this.manager.Socket.IsOpen)
         {
-            this.manager.Socket.Emit(eventName, json);
-            Debug.Log("JSON data sent: " + json);
+            if (json != null)
+            {
+                this.manager.Socket.Emit(eventName, json);
+                Debug.Log(string.Concat("<color=green><b>", "JSON data sent: " + json, "</b></color>"));
+            }
+            else
+            {
+                this.manager.Socket.Emit(eventName);
+                //Debug.Log(string.Concat("<color=green><b>", "JSON data sent: " + json, "</b></color>"));
+            }
         }
         else
         {
@@ -185,100 +286,110 @@ public class SocketIOManager : MonoBehaviour
         }
     }
 
-    internal void CloseWebSocket()
+
+
+    internal void CloseSocket()
     {
-        if (this.manager != null)
-        {
-            this.manager.Close();
-        }
+        SendDataWithNamespace("EXIT");
     }
 
     private void ParseResponse(string jsonObject)
     {
-        Debug.Log(jsonObject);
+        //Debug.Log(jsonObject);
         Root myData = JsonConvert.DeserializeObject<Root>(jsonObject);
 
         string id = myData.id;
 
-        switch(id)
+        switch (id)
         {
             case "InitData":
                 {
-                    Debug.Log(jsonObject);
+                    Debug.Log(string.Concat("<color=cyan><b>", jsonObject, "</b></color>"));
                     initialData = myData.message.GameData;
                     initUIData = myData.message.UIData;
                     playerdata = myData.message.PlayerData;
                     bonusdata = myData.message.BonusData;
-                    List<string> LinesString = ConvertListListIntToListString(initialData.Lines);
-                    List<string> InitialReels = ConvertListOfListsToStrings(initialData.Reel);
-                    InitialReels = RemoveQuotes(InitialReels);
-                    PopulateSlotSocket(InitialReels, LinesString);
+                    if (!SetInit)
+                    {
+                        //Debug.Log(jsonObject);
+                        //List<string> LinesString = ConvertListListIntToListString(initialData.Lines);
+
+                        //Debug.Log(LinesString);
+                        //Debug.Log(string.Concat("<color=yellow><b>", string.Join(",", LinesString), "</b></color>"));
+
+                        List<string> InitialReels = ConvertListOfListsToStrings(initialData.Reel);
+                        InitialReels = RemoveQuotes(InitialReels);
+                        PopulateSlotSocket();
+                        SetInit = true;
+                    }
+                    else
+                    {
+                        RefreshUI();
+                    }
                     break;
                 }
             case "ResultData":
                 {
-                    Debug.Log(jsonObject);
-                    myData.message.GameData.FinalResultReel = ConvertListOfListsToStrings(myData.message.GameData.ResultReel);
-                    myData.message.GameData.FinalsymbolsToEmit = TransformAndRemoveRecurring(myData.message.GameData.symbolsToEmit);
+                    Debug.Log(string.Concat("<color=yellow><b>", jsonObject, "</b></color>"));
+                    myData.message.GameData.FinalResultReel = ConvertListListIntToListString(myData.message.GameData.resultSymbols);
+                    //myData.message.GameData.FinalsymbolsToEmit = TransformAndRemoveRecurring(myData.message.GameData.symbolsToEmit);
                     resultData = myData.message.GameData;
                     playerdata = myData.message.PlayerData;
                     isResultdone = true;
                     break;
                 }
+            case "GambleResult":
+                {
+                    Debug.Log(string.Concat("<color=yellow><b>", jsonObject, "</b></color>"));
+                    gambleData = myData.message;
+                    isGambledone = true;
+                    break;
+                }
+            case "ExitUser":
+                {
+                    if (this.manager != null)
+                    {
+                        Debug.Log("Dispose my Socket");
+                        this.manager.Close();
+                    }
+                    Application.ExternalCall("window.parent.postMessage", "onExit", "*");
+                    break;
+                }
         }
     }
 
-    private void PopulateSlotSocket(List<string> slotPop, List<string> LineIds)
+    private void RefreshUI()
     {
-        for (int i = 0; i < slotPop.Count; i++)
-        {
-            List<int> points = slotPop[i]?.Split(',')?.Select(Int32.Parse)?.ToList();
-            slotManager.PopulateInitalSlots(i, points);
-        }
+        uiManager.InitialiseUIData(initUIData.AbtLogo.link, initUIData.AbtLogo.logoSprite, initUIData.ToULink, initUIData.PopLink, initUIData.paylines);
+    }
 
-        for (int i = 0; i < slotPop.Count; i++)
-        {
-            slotManager.LayoutReset(i);
-        }
+    private void PopulateSlotSocket()
+    {
+        slotManager.shuffleInitialMatrix();
 
-        for (int i = 0; i < LineIds.Count; i++)
-        {
-            slotManager.FetchLines(LineIds[i], i);
-        }
+        //for (int i = 0; i < LineIds.Count; i++)
+        //{
+        //    slotManager.FetchLines(LineIds[i], i);
+        //}
 
         slotManager.SetInitialUI();
 
+        isLoaded = true;
         Application.ExternalCall("window.parent.postMessage", "OnEnter", "*");
     }
 
     internal void AccumulateResult(double currBet)
     {
         isResultdone = false;
-        SendDataWithNamespace("SPIN", currBet, "message");
-    }
-
-
-    private void SendDataWithNamespace(string namespaceName, double bet, string eventName)
-    {
-        // Construct message data
-
         MessageData message = new MessageData();
         message.data = new BetData();
-        message.data.currentBet = bet;
-        message.id = namespaceName;
+        message.data.currentBet = currBet;
+        message.data.spins = 1;
+        message.data.currentLines = 25;
+        message.id = "SPIN";
         // Serialize message data to JSON
         string json = JsonUtility.ToJson(message);
-        Debug.Log(json);
-        // Send the message
-        if (this.manager.Socket != null && this.manager.Socket.IsOpen)
-        {
-            this.manager.Socket.Emit(eventName, json);
-            Debug.Log("JSON data sent: " + json);
-        }
-        else
-        {
-            Debug.LogWarning("Socket is not connected.");
-        }
+        SendDataWithNamespace("message", json);
     }
 
     private List<string> RemoveQuotes(List<string> stringList)
@@ -351,7 +462,8 @@ public class SocketIOManager : MonoBehaviour
 public class BetData
 {
     public double currentBet;
-    //public double TotalLines;
+    public double currentLines;
+    public double spins;
 }
 
 [Serializable]
@@ -365,6 +477,26 @@ public class AuthData
 public class MessageData
 {
     public BetData data;
+    public string id;
+}
+
+[Serializable]
+public class GambleData
+{
+    public string id;
+    //public string CardType;
+}
+
+[Serializable]
+public class GambleResultData
+{
+    public string id;
+    public string cardType;
+}
+
+[Serializable]
+public class ExitData
+{
     public string id;
 }
 
@@ -385,23 +517,31 @@ public class AbtLogo
 [Serializable]
 public class GameData
 {
+    public List<double> Bets { get; set; }
     public List<List<string>> Reel { get; set; }
-    public List<List<int>> Lines { get; set; }
-    public List<int> Bets { get; set; }
-    public bool canSwitchLines { get; set; }
-    public List<int> LinesCount { get; set; }
-    public List<int> autoSpin { get; set; }
-    public List<List<string>> ResultReel { get; set; }
-    public List<int> linesToEmit { get; set; }
-    public List<List<string>> symbolsToEmit { get; set; }
-    public double WinAmout { get; set; }
-    public double freeSpins { get; set; }
+    public List<List<int>> resultSymbols { get; set; }
+    public FreeSpin freeSpin { get; set; }
+    public List<WinningCombination> winningCombinations { get; set; }
     public List<string> FinalsymbolsToEmit { get; set; }
     public List<string> FinalResultReel { get; set; }
-    public double jackpot { get; set; }
-    public bool isBonus { get; set; }
-    public double BonusStopIndex { get; set; }
 }
+
+[Serializable]
+public class WinningCombination
+{
+    public int symbolId { get; set; }
+    public List<List<int>> positions { get; set; }
+    public double payout { get; set; }
+}
+
+[Serializable]
+public class FreeSpin
+{
+    public bool isFreeSpin { get; set; }
+    public int freeSpinCount { get; set; }
+    public List<int> freeSpinMultipliers { get; set; }
+}
+
 
 [Serializable]
 public class Message
@@ -410,6 +550,11 @@ public class Message
     public UIData UIData { get; set; }
     public PlayerData PlayerData { get; set; }
     public List<string> BonusData { get; set; }
+
+    public bool playerWon { get; set; }
+    public double currentWinning { get; set; }
+    public int cardId { get; set; }
+    public double balance { get; set; }
 }
 
 [Serializable]
@@ -417,13 +562,14 @@ public class Root
 {
     public string id { get; set; }
     public Message message { get; set; }
+    public string username { get; set; }
 }
 
 [Serializable]
 public class UIData
 {
     public Paylines paylines { get; set; }
-    public List<string> spclSymbolTxt { get; set; }
+    public List<object> spclSymbolTxt { get; set; }
     public AbtLogo AbtLogo { get; set; }
     public string ToULink { get; set; }
     public string PopLink { get; set; }
@@ -438,31 +584,50 @@ public class Paylines
 [Serializable]
 public class Symbol
 {
-    public Multiplier multiplier { get; set; }
+    public int ID { get; set; }
+    public string Name { get; set; }
+    [JsonProperty("multiplier")]
+    public object MultiplierObject { get; set; }
+
+    // This property will hold the properly deserialized list of lists of integers
+    [JsonIgnore]
+    public List<List<int>> Multiplier { get; private set; }
+
+    // Custom deserialization method to handle the conversion
+    [OnDeserialized]
+    internal void OnDeserializedMethod(StreamingContext context)
+    {
+        // Handle the case where multiplier is an object (empty in JSON)
+        if (MultiplierObject is JObject)
+        {
+            Multiplier = new List<List<int>>();
+        }
+        else
+        {
+            // Deserialize normally assuming it's an array of arrays
+            Multiplier = JsonConvert.DeserializeObject<List<List<int>>>(MultiplierObject.ToString());
+        }
+    }
+    public int freeSpin { get; set; }
+    public object defaultAmount { get; set; }
+    public object symbolsCount { get; set; }
+    public object increaseValue { get; set; }
+    public object description { get; set; }
+    public int payout { get; set; }
+    public object mixedPayout { get; set; }
+    public object defaultPayout { get; set; }
 }
-
-[Serializable]
-public class Multiplier
-{
-    [JsonProperty("5x")]
-    public double _5x { get; set; }
-
-    [JsonProperty("4x")]
-    public double _4x { get; set; }
-
-    [JsonProperty("3x")]
-    public double _3x { get; set; }
-
-    [JsonProperty("2x")]
-    public double _2x { get; set; }
-}
-
 [Serializable]
 public class PlayerData
 {
-    public double Balance { get; set; }
+    public string Balance { get; set; }
     public double haveWon { get; set; }
+    public double currentWining { get; set; }
+    public double totalbet { get; set; }
 }
-
-
-
+[Serializable]
+public class AuthTokenData
+{
+    public string cookie;
+    public string socketURL;
+}

@@ -1,0 +1,1 @@
+Report created: 	20/09/24	3:46:47 PM ISTProject name: box.aepSource files collected to: 	/Users/sidharth/Desktop/5 start files /box folderSource files collected: NoneCollected comps:  	squar 	squar 2	Number of collected files:  0Size of collected files:  0 KBRendering plug-ins:	Classic 3D	Effects used:  1Effect:  Echo	

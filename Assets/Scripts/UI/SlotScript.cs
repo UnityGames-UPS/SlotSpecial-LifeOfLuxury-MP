@@ -18,7 +18,7 @@ public class SlotScript : MonoBehaviour
     {
         if (animrun_Object) animrun_Object.SetActive(true);
         if (animbox_Object) animbox_Object.SetActive(true);
-      //  if (animrun_Image) animrun_Image.color = imgcolor;
+        if (animrun_Image) animrun_Image.color = imgcolor;
         if (animbox_Image) animbox_Image.color = imgcolor;
     }
 
