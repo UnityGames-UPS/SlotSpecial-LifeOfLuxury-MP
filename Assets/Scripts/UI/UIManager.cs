@@ -320,7 +320,6 @@ public class UIManager : MonoBehaviour
         for (int i = 0; i < paylines.symbols.Count - 2; i++)
         {
             string text = null;
-            Debug.Log(paylines.symbols[i].Multiplier[0][0]);
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
                 text += "<color=white>5</color>  " + paylines.symbols[i].Multiplier[0][0].ToString("f2");

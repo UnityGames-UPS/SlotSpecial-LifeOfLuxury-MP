@@ -157,27 +157,6 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gui-2_6
-      rect:
-        serializedVersion: 2
-        x: 149
-        y: 1200
-        width: 397
-        height: 3128
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 71f491b31141e46a4bdf72c258e3f96d
-      internalID: 1948295307
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: soundIcon
       rect:
         serializedVersion: 2
@@ -304,27 +283,6 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: spin_button
-      rect:
-        serializedVersion: 2
-        x: 3895
-        y: 544
-        width: 945
-        height: 776
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d0835704684314cb1a900e563a0711de
-      internalID: -34762119
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: gui-2_16
       rect:
         serializedVersion: 2
@@ -362,27 +320,6 @@ TextureImporter:
       bones: []
       spriteID: 5ae2b9133e5a7406e9926d77fd393f25
       internalID: -1615819413
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gui-2_18
-      rect:
-        serializedVersion: 2
-        x: 2907
-        y: 804
-        width: 759
-        height: 255
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1b94a190732284fb1aa478562eacca73
-      internalID: 1763464293
       vertices: []
       indices: 
       edges: []
