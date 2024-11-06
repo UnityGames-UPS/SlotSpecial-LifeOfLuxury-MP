@@ -34,7 +34,7 @@ public class SlotBehaviour : MonoBehaviour
     private List<Image> m_SubMasks;
     [SerializeField]
     private List<SlotData> m_SlotData;
-    private Vector2 m_Z_Slot = new Vector2(400, 820);
+    private Vector2 m_Z_Slot = new Vector2(400, 840);
     private Vector2 m_N_Slot = new Vector2(300, 700);
     private Vector2 m_Z_S_Icon = new Vector2(100, 100);
     private Vector2 m_Z_Icon = new Vector2(50, 50);
@@ -179,7 +179,13 @@ public class SlotBehaviour : MonoBehaviour
         if (SlotStart_Button) SlotStart_Button.onClick.AddListener(delegate { StartSlots(); audioController.PlayButtonAudio(); });
 
         if (Take_Button) Take_Button.onClick.RemoveAllListeners();
-        if (Take_Button) Take_Button.onClick.AddListener(() => { m_GambleController.ResetToDefault(); audioController.PlayButtonAudio(); });
+        if (Take_Button) Take_Button.onClick.AddListener(() =>
+        {
+            Balance_text.text = (double.Parse(Balance_text.text) + SocketManager.playerdata.currentWining).ToString();
+
+            m_GambleController.ResetToDefault();
+            audioController.PlayButtonAudio();
+        });
 
         if (BetPlus_Button) BetPlus_Button.onClick.RemoveAllListeners();
         if (BetPlus_Button) BetPlus_Button.onClick.AddListener(delegate { ChangeBet(true); audioController.PlayButtonAudio(); });
@@ -458,7 +464,7 @@ public class SlotBehaviour : MonoBehaviour
                 {
                     animScript.textureArray.Add(Bottle_Sprite[i]);
                 }
-                //animScript.AnimationSpeed = 20f;
+                animScript.AnimationSpeed = 35f;
                 break;
             default:
                     break;
@@ -563,7 +569,10 @@ public class SlotBehaviour : MonoBehaviour
             Debug.Log("Error while conversion " + e.Message);
         }
 
-        balance = balance - bet;
+        if (!IsFreeSpin)
+        {
+            balance = balance - bet;
+        }
 
         if (Balance_text) Balance_text.text = balance.ToString();
 
