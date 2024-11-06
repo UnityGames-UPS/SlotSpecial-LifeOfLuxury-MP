@@ -255,6 +255,7 @@ public class UIManager : MonoBehaviour
     {
         int initAmount = 0;
         if (m_object) m_object.SetActive(true);
+        m_object.GetComponent<ImageAnimation>().StartAnimation();
         if (MainPopup_Object) MainPopup_Object.SetActive(true);
 
         //DOTween.To(() => initAmount, (val) => initAmount = val, (int)amount, 5f).OnUpdate(() =>
@@ -262,8 +263,9 @@ public class UIManager : MonoBehaviour
         //    if (Win_Text) Win_Text.text = initAmount.ToString();
         //});
 
-        DOVirtual.DelayedCall(6f, () =>
+        DOVirtual.DelayedCall(3f, () =>
         {
+            m_object.GetComponent<ImageAnimation>().StopAnimation();
             ClosePopup(m_object);
             slotManager.CheckPopups = false;
         });
