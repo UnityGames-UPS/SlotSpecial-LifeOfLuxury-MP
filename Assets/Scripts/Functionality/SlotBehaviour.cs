@@ -28,6 +28,16 @@ public class SlotBehaviour : MonoBehaviour
     [Header("Slots Elements")]
     [SerializeField]
     private LayoutElement[] Slot_Elements;
+    [SerializeField]
+    private Image m_MainSlotMask;
+    [SerializeField]
+    private List<Image> m_SubMasks;
+    [SerializeField]
+    private List<SlotData> m_SlotData;
+    private Vector2 m_Z_Slot = new Vector2(400, 765);
+    private Vector2 m_N_Slot = new Vector2(300, 700);
+    private Vector2 m_Z_S_Icon = new Vector2(100, 100);
+    private Vector2 m_Z_Icon = new Vector2(50, 50);
 
     [Header("Slots Transforms")]
     [SerializeField]
@@ -382,7 +392,7 @@ public class SlotBehaviour : MonoBehaviour
         if (TotalBet_text) TotalBet_text.text = SocketManager.initialData.Bets[BetCounter].ToString();
         if (MainBet_text) MainBet_text.text = (SocketManager.initialData.Bets[BetCounter] * Lines).ToString();
         //if (Lines_text) Lines_text.text = SocketManager.initialData.LinesCount[LineCounter].ToString();
-        if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString("F2");
+        if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString();
         if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
 
         //HACK: To Be Uncommented After Parse Sheet Recieving
@@ -497,8 +507,8 @@ public class SlotBehaviour : MonoBehaviour
     {
         currentBalance = balance;
 
-        Balance_text.text = currentBalance.ToString("F2");
-        TotalWin_text.text = win.ToString("F2");
+        Balance_text.text = currentBalance.ToString();
+        TotalWin_text.text = win.ToString();
 
         if (!won)
         {
@@ -530,6 +540,7 @@ public class SlotBehaviour : MonoBehaviour
             InitializeTweening(Slot_Transform[i]);
             yield return new WaitForSeconds(0.1f);
         }
+        ResetRectTransform();
 
         double bet = 0;
         double balance = 0;
@@ -560,15 +571,18 @@ public class SlotBehaviour : MonoBehaviour
         //HACK: Waits until the result is came from the backend
         yield return new WaitUntil(() => SocketManager.isResultdone);
 
+        m_SlotData.Clear();
+        m_SlotData.TrimExcess();
         //HACK: Updates the result data accordingly.
-        for(int j = 0; j < SocketManager.resultData.FinalResultReel.Count; j++)
+        for (int j = 0; j < SocketManager.resultData.FinalResultReel.Count; j++)
         {
             List<int> resultnum = SocketManager.resultData.FinalResultReel[j]?.Split(',')?.Select(Int32.Parse)?.ToList();
             Debug.Log(string.Join(",", resultnum));
 
-            for(int i = 0; i < resultnum.Count; i++)
+            for (int i = 0; i < resultnum.Count; i++)
             {
                 if (Tempimages[i].slotImages[j]) Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<Image>().sprite = myImages[resultnum[i]];
+                m_SlotData.Add(new SlotData { result_val = resultnum[i], i_val = i, j_val = j });
             }
         }
 
@@ -580,6 +594,13 @@ public class SlotBehaviour : MonoBehaviour
         //HACK: Stops the initialized tweening.
         for (int i = 0; i < numberOfSlots; i++)
         {
+            foreach (var k in m_SlotData)
+            {
+                if(k.i_val == i)
+                {
+                    ChangeRectOf(k.result_val, k.i_val, k.j_val);
+                }
+            }
             yield return StopTweening(5, Slot_Transform[i], i);
         }
 
@@ -596,7 +617,7 @@ public class SlotBehaviour : MonoBehaviour
 
         CheckPopups = true;
 
-        if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString("F2");
+        if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString();
 
         if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
 
@@ -910,9 +931,50 @@ public class SlotBehaviour : MonoBehaviour
         {
             for (int j = 0; j < Tempimages[i].slotImages.Count; j++)
             {
-                int randomIndex = UnityEngine.Random.Range(0, myImages.Length);
+                int randomIndex = UnityEngine.Random.Range(5, 11);
                 Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<Image>().sprite = myImages[randomIndex];
+
+                ChangeRectOf(randomIndex, i, j);
             }
+        }
+    }
+
+    private void ChangeRectOf(int index, int i, int j)
+    {
+        m_MainSlotMask.enabled = false;
+        if (index >= 0 && index <= 4 || index == 11 || index == 12)
+        {
+            if (index == 11 || index == 12)
+            {
+                Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<RectTransform>().offsetMin = m_Z_S_Icon * -1;
+                Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<RectTransform>().offsetMax = m_Z_S_Icon;
+            }
+            else
+            {
+                Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<RectTransform>().offsetMin = m_Z_Icon * -1;
+                Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<RectTransform>().offsetMax = m_Z_Icon;
+            }
+            m_SubMasks[i].rectTransform.sizeDelta = m_Z_Slot;
+        }
+        //m_SubMasks[i].enabled = true;
+    }
+
+    private void ResetRectTransform()
+    {
+        m_MainSlotMask.enabled = true;
+        for (int i = 0; i < Tempimages.Count; i++)
+        {
+            for (int j = 0; j < Tempimages[i].slotRects.Count; j++)
+            {
+                Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<RectTransform>().offsetMin = new Vector2(0, 0);
+                Tempimages[i].slotImages[j].transform.GetChild(0).GetComponent<RectTransform>().offsetMax = new Vector2(0, 0);
+            }
+        }
+
+        foreach(var i in m_SubMasks)
+        {
+            //i.enabled = false;
+            i.rectTransform.sizeDelta = m_N_Slot;
         }
     }
 
@@ -957,3 +1019,10 @@ public class SlotImage
     public List<Image> MiniImages;
 }
 
+[Serializable]
+public struct SlotData
+{
+    public int result_val;
+    public int i_val;
+    public int j_val;
+}
