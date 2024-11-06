@@ -34,7 +34,7 @@ public class SlotBehaviour : MonoBehaviour
     private List<Image> m_SubMasks;
     [SerializeField]
     private List<SlotData> m_SlotData;
-    private Vector2 m_Z_Slot = new Vector2(400, 765);
+    private Vector2 m_Z_Slot = new Vector2(400, 820);
     private Vector2 m_N_Slot = new Vector2(300, 700);
     private Vector2 m_Z_S_Icon = new Vector2(100, 100);
     private Vector2 m_Z_Icon = new Vector2(50, 50);
@@ -163,7 +163,7 @@ public class SlotBehaviour : MonoBehaviour
 
     private int BetCounter = 0;
     private int LineCounter = 0;
-    protected int Lines = 15;
+    protected int Lines = 25;
 
     private double currentBalance = 0;
     private double currentTotalBet = 0;
@@ -534,6 +534,7 @@ public class SlotBehaviour : MonoBehaviour
         IsSpinning = true;
         ToggleButtonGrp(false);
 
+        m_MainSlotMask.enabled = true;
         //HACK: Number of spins initialized
         for (int i = 0; i < numberOfSlots; i++)
         {
@@ -546,7 +547,7 @@ public class SlotBehaviour : MonoBehaviour
         double balance = 0;
         try
         {
-            bet = double.Parse(TotalBet_text.text);
+            bet = double.Parse(MainBet_text.text);
         }
         catch (Exception e)
         {
@@ -603,7 +604,7 @@ public class SlotBehaviour : MonoBehaviour
             }
             yield return StopTweening(5, Slot_Transform[i], i);
         }
-
+        m_MainSlotMask.enabled = false;
         yield return new WaitForSeconds(0.3f);
 
         KillAllTweens();
@@ -621,6 +622,7 @@ public class SlotBehaviour : MonoBehaviour
 
         if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
 
+        balance = double.Parse(SocketManager.playerdata.Balance);
         currentBalance = double.Parse(SocketManager.playerdata.Balance);
 
         if(!IsAutoSpin && !IsFreeSpin && !SocketManager.resultData.freeSpin.isFreeSpin && SocketManager.playerdata.currentWining > 0)
@@ -941,7 +943,6 @@ public class SlotBehaviour : MonoBehaviour
 
     private void ChangeRectOf(int index, int i, int j)
     {
-        m_MainSlotMask.enabled = false;
         if (index >= 0 && index <= 4 || index == 11 || index == 12)
         {
             if (index == 11 || index == 12)
@@ -961,7 +962,6 @@ public class SlotBehaviour : MonoBehaviour
 
     private void ResetRectTransform()
     {
-        m_MainSlotMask.enabled = true;
         for (int i = 0; i < Tempimages.Count; i++)
         {
             for (int j = 0; j < Tempimages[i].slotRects.Count; j++)
