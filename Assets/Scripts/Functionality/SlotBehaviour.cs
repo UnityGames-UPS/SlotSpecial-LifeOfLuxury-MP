@@ -193,9 +193,9 @@ public class SlotBehaviour : MonoBehaviour
         if (BetMinus_Button) BetMinus_Button.onClick.AddListener(delegate { ChangeBet(false); audioController.PlayButtonAudio(); });
 
         if (LinePlus_Button) LinePlus_Button.onClick.RemoveAllListeners();
-        if (LinePlus_Button) LinePlus_Button.onClick.AddListener(delegate { ChangeLine(true); audioController.PlayButtonAudio(); });
+        if (LinePlus_Button) LinePlus_Button.onClick.AddListener(delegate { ChangeBet(true); audioController.PlayButtonAudio(); });
         if (LineMinus_Button) LineMinus_Button.onClick.RemoveAllListeners();
-        if (LineMinus_Button) LineMinus_Button.onClick.AddListener(delegate { ChangeLine(false); audioController.PlayButtonAudio(); });
+        if (LineMinus_Button) LineMinus_Button.onClick.AddListener(delegate { ChangeBet(false); audioController.PlayButtonAudio(); });
 
         if (MaxBet_Button) MaxBet_Button.onClick.RemoveAllListeners();
         if (MaxBet_Button) MaxBet_Button.onClick.AddListener(delegate { MaxBet(); audioController.PlayButtonAudio(); });
