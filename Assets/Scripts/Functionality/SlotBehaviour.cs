@@ -181,7 +181,7 @@ public class SlotBehaviour : MonoBehaviour
         if (Take_Button) Take_Button.onClick.RemoveAllListeners();
         if (Take_Button) Take_Button.onClick.AddListener(() =>
         {
-            Balance_text.text = (double.Parse(Balance_text.text) + SocketManager.playerdata.currentWining).ToString();
+            //Balance_text.text = (double.Parse(Balance_text.text) + SocketManager.playerdata.currentWining).ToString();
 
             m_GambleController.ResetToDefault();
             audioController.PlayButtonAudio();
