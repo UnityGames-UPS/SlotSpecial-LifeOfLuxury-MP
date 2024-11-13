@@ -2530,7 +2530,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: cc4a27e32ebb343f3a657824cda021a4, type: 3}
+  m_Sprite: {fileID: 479647367, guid: cc4a27e32ebb343f3a657824cda021a4, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -7738,7 +7738,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: fa51fd5abdd404811bddba4c5792d371, type: 3}
+  m_Sprite: {fileID: -1765579711, guid: fa51fd5abdd404811bddba4c5792d371, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -9421,7 +9421,7 @@ MonoBehaviour:
   slotManager: {fileID: 2046803210}
   uiManager: {fileID: 377874625}
   bonusdata: []
-  testToken: 
+  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZDgzZDdkYTI3YmY5MDI0NDNlYjRkZSIsInVzZXJuYW1lIjoiZGFyc2hhbiIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3MzExNDgzMjUsImV4cCI6MTczMTc1MzEyNX0.6QPO158dwh3jnYmUaHo37rRAGat-qIK1ucyand5KJdY
 --- !u!114 &500036493
 MonoBehaviour:
   m_ObjectHideFlags: 0
