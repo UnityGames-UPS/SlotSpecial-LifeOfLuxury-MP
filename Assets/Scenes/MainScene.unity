@@ -9421,7 +9421,7 @@ MonoBehaviour:
   slotManager: {fileID: 2046803210}
   uiManager: {fileID: 377874625}
   bonusdata: []
-  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZDgzZDdkYTI3YmY5MDI0NDNlYjRkZSIsInVzZXJuYW1lIjoiZGFyc2hhbiIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3MzExNDgzMjUsImV4cCI6MTczMTc1MzEyNX0.6QPO158dwh3jnYmUaHo37rRAGat-qIK1ucyand5KJdY
+  testToken: 
 --- !u!114 &500036493
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33153,6 +33153,7 @@ MonoBehaviour:
   m_Gamble_Game_Panel: {fileID: 1029598982}
   m_AutoPlayRef: {fileID: 271841704}
   m_GambleToggle: {fileID: 1674208042}
+  audioController: {fileID: 4877248867377730751}
 --- !u!1 &1870451571
 GameObject:
   m_ObjectHideFlags: 0

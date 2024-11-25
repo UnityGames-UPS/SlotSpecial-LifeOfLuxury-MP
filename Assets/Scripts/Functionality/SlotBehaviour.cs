@@ -178,14 +178,14 @@ public class SlotBehaviour : MonoBehaviour
         if (SlotStart_Button) SlotStart_Button.onClick.RemoveAllListeners();
         if (SlotStart_Button) SlotStart_Button.onClick.AddListener(delegate { StartSlots(); audioController.PlayButtonAudio(); });
 
-        if (Take_Button) Take_Button.onClick.RemoveAllListeners();
-        if (Take_Button) Take_Button.onClick.AddListener(() =>
-        {
-            //Balance_text.text = (double.Parse(Balance_text.text) + SocketManager.playerdata.currentWining).ToString();
+        //if (Take_Button) Take_Button.onClick.RemoveAllListeners();
+        //if (Take_Button) Take_Button.onClick.AddListener(() =>
+        //{
+        //    //Balance_text.text = (double.Parse(Balance_text.text) + SocketManager.playerdata.currentWining).ToString();
 
-            m_GambleController.ResetToDefault();
-            audioController.PlayButtonAudio();
-        });
+        //    //m_GambleController.ResetToDefault();
+        //    //audioController.PlayButtonAudio();
+        //});
 
         if (BetPlus_Button) BetPlus_Button.onClick.RemoveAllListeners();
         if (BetPlus_Button) BetPlus_Button.onClick.AddListener(delegate { ChangeBet(true); audioController.PlayButtonAudio(); });
