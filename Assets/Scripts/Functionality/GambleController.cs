@@ -51,6 +51,10 @@ public class GambleController : MonoBehaviour
     [SerializeField]
     private Toggle m_GambleToggle;
 
+    [Header("Audio Manager")]
+    [SerializeField]
+    private AudioController audioController;
+
     private Coroutine m_GetGambleResult = null;
     private Coroutine m_ResetToDefault = null;
 
@@ -68,7 +72,12 @@ public class GambleController : MonoBehaviour
         if (m_BlackButton) m_BlackButton.onClick.AddListener(delegate { OnBlackButtonClicked(); });
 
         if (m_TakeButton) m_TakeButton.onClick.RemoveAllListeners();
-        if (m_TakeButton) m_TakeButton.onClick.AddListener(delegate { OnCollectButtonClicked(); });
+        if (m_TakeButton) m_TakeButton.onClick.AddListener(delegate
+        {
+            OnCollectButtonClicked();
+            ResetToDefault();
+            audioController.PlayButtonAudio();
+        });
 
         m_ShowCard.gameObject.SetActive(true);
         m_ResultCard.gameObject.SetActive(false);
