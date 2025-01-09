@@ -94,7 +94,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Settings Popup")]
     [SerializeField]
-    private Button Settings_Button;
+    internal Button Settings_Button;
     [SerializeField]
     private Button SettingsClose_Button;
     [SerializeField]
@@ -111,6 +111,13 @@ public class UIManager : MonoBehaviour
     private Toggle Music_Toggle;
 
     [SerializeField]
+    private Button SkipWinAnimation;
+    [SerializeField]
+    private Button SkipWinAnimation2;
+    private Tween WinPopupTextTween;
+    private Tween ClosePopupTween;
+
+    [SerializeField]
     private AudioController audioController;
 
     [SerializeField]
@@ -122,7 +129,7 @@ public class UIManager : MonoBehaviour
     private bool isMusic = true;
     private bool isSound = true;
     private bool isExit = false;
-    private int FreeSpins;
+    internal int FreeSpins;
 
     private int slideCounter = 0;
 
@@ -185,15 +192,30 @@ public class UIManager : MonoBehaviour
 
         isMusic = true;
         isSound = true;
+
+        if (SkipWinAnimation) SkipWinAnimation.onClick.RemoveAllListeners();
+        if (SkipWinAnimation) SkipWinAnimation.onClick.AddListener(SkipWin);
+
+        if (SkipWinAnimation2) SkipWinAnimation2.onClick.RemoveAllListeners();
+        if (SkipWinAnimation2) SkipWinAnimation2.onClick.AddListener(SkipWin);
     }
 
-    //private void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.Space))
-    //        SwitchFreeSpinMode(true);
-    //    if (Input.GetKeyDown(KeyCode.V))
-    //        SwitchFreeSpinMode(false);
-    //}
+    void SkipWin()
+    {
+        Debug.Log("Skip win called");
+        if (ClosePopupTween != null)
+        {
+            ClosePopupTween.Kill();
+            ClosePopupTween = null;
+        }
+        if (WinPopupTextTween != null)
+        {
+            WinPopupTextTween.Kill();
+            WinPopupTextTween = null;
+        }
+        ClosePopup(WinPopup_Object);
+        slotManager.CheckPopups = false;
+    }
 
     private void StartFreeSpins(int spins)
     {
@@ -203,8 +225,11 @@ public class UIManager : MonoBehaviour
 
     internal void FreeSpinProcess(int spins)
     {
+        int ExtraSpins = spins - FreeSpins;
         FreeSpins = spins;
-        StartFreeSpins(spins);
+        DOVirtual.DelayedCall(1f, () => {
+            StartFreeSpins(spins);
+        });
     }
 
     internal void DisconnectionPopup(bool isReconnection)
@@ -324,15 +349,15 @@ public class UIManager : MonoBehaviour
             string text = null;
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += "<color=white>5</color>  " + paylines.symbols[i].Multiplier[0][0].ToString("f2");
+                text += "<color=white>5</color>  " + paylines.symbols[i].Multiplier[0][0].ToString("f3") + "x";
             }
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += "\n<color=white>4</color>  " + paylines.symbols[i].Multiplier[1][0].ToString("f2");
+                text += "\n<color=white>4</color>  " + paylines.symbols[i].Multiplier[1][0].ToString("f3") + "x";
             }
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += "\n<color=white>3</color>  " + paylines.symbols[i].Multiplier[2][0].ToString("f2");
+                text += "\n<color=white>3</color>  " + paylines.symbols[i].Multiplier[2][0].ToString("f3") + "x";
             }
             //if (paylines.symbols[i].Multiplier[0][0] != 0)
             //{
