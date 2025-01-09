@@ -66,10 +66,10 @@ public class GambleController : MonoBehaviour
         if (m_InitButton) m_InitButton.onClick.AddListener(delegate { StartGamble(); m_InitButton.interactable = false; });
 
         if (m_RedButton) m_RedButton.onClick.RemoveAllListeners();
-        if (m_RedButton) m_RedButton.onClick.AddListener(delegate { OnRedButtonClicked(); });
+        if (m_RedButton) m_RedButton.onClick.AddListener(delegate { OnRedButtonClicked(); audioController.PlayButtonAudio(); });
 
         if (m_BlackButton) m_BlackButton.onClick.RemoveAllListeners();
-        if (m_BlackButton) m_BlackButton.onClick.AddListener(delegate { OnBlackButtonClicked(); });
+        if (m_BlackButton) m_BlackButton.onClick.AddListener(delegate { OnBlackButtonClicked(); audioController.PlayButtonAudio(); });
 
         if (m_TakeButton) m_TakeButton.onClick.RemoveAllListeners();
         if (m_TakeButton) m_TakeButton.onClick.AddListener(delegate
@@ -121,6 +121,11 @@ public class GambleController : MonoBehaviour
 
     internal void StartGamble()
     {
+        if (m_SlotBehaviour.IsAutoSpin)
+        {
+            m_SlotBehaviour.WasAutoSpinOn = true;
+            m_SlotBehaviour.StopAutoSpin();
+        }
         m_Is_Gambling = true;
         SocketManager.StartGambleGame();
         StartGambleUI();
@@ -138,8 +143,11 @@ public class GambleController : MonoBehaviour
         SocketManager.SelectGambleCard("RED");
         if(m_GetGambleResult != null)
         {
-            StopCoroutine(m_GetGambleResult);
-            m_GetGambleResult = null;
+            if(m_GetGambleResult != null)
+            {
+                StopCoroutine(m_GetGambleResult);
+                m_GetGambleResult = null;
+            }
         }
         m_GetGambleResult = StartCoroutine(GetGambleResult());
     }
@@ -152,8 +160,11 @@ public class GambleController : MonoBehaviour
         SocketManager.SelectGambleCard("BLACK");
         if (m_GetGambleResult != null)
         {
-            StopCoroutine(m_GetGambleResult);
-            m_GetGambleResult = null;
+            if (m_GetGambleResult != null)
+            {
+                StopCoroutine(m_GetGambleResult);
+                m_GetGambleResult = null;
+            }
         }
         m_GetGambleResult = StartCoroutine(GetGambleResult());
     }
@@ -163,8 +174,11 @@ public class GambleController : MonoBehaviour
         SocketManager.CollectGambledAmount();
         if(m_GetGambleResult != null)
         {
-            StopCoroutine(m_GetGambleResult);
-            m_GetGambleResult = null;
+            if (m_GetGambleResult != null)
+            {
+                StopCoroutine(m_GetGambleResult);
+                m_GetGambleResult = null;
+            }
         }
     }
 
@@ -213,7 +227,7 @@ public class GambleController : MonoBehaviour
         m_TakeButton.interactable = false;
         m_RedButton.interactable = false;
         m_BlackButton.interactable = false;
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1.5f);
         m_Is_Gambling = false;
         m_InitButton.interactable = true;
         m_TakeButton.interactable = true;
@@ -225,6 +239,11 @@ public class GambleController : MonoBehaviour
         m_Gamble_Game_Panel.SetActive(false);
         m_TakeButton.gameObject.SetActive(false);
         m_SlotStartButton.gameObject.SetActive(true);
+        if (m_SlotBehaviour.WasAutoSpinOn)
+        {
+            m_SlotBehaviour.AutoSpin();
+            m_SlotBehaviour.WasAutoSpinOn = false;
+        }
 
         StopCoroutine(m_ResetToDefault);
         m_ResetToDefault = null;
