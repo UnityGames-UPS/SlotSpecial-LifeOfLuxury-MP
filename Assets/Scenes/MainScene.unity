@@ -9423,7 +9423,7 @@ MonoBehaviour:
   slotManager: {fileID: 2046803210}
   uiManager: {fileID: 377874625}
   bonusdata: []
-  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZDgzZDdkYTI3YmY5MDI0NDNlYjRkZSIsInVzZXJuYW1lIjoiZGFyc2hhbiIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3MzU4OTI4OTIsImV4cCI6MTczNjQ5NzY5Mn0.rc5qIv0AbWp42FaqpsTxflgQQNiU_6Rw2A1AACdcU8c
+  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZDgzZDdkYTI3YmY5MDI0NDNlYjRkZSIsInVzZXJuYW1lIjoiZGFyc2hhbiIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3MzY5MzQ3NTEsImV4cCI6MTczNzUzOTU1MX0.Z29bH7Vzzxwfq_ft1yhZ9OtHCbmOOrypFA7zAWf_bSw
 --- !u!114 &500036493
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -37959,8 +37959,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 47581bef76d7a41a2b5b86433b8771e0, type: 3}
   - {fileID: 21300000, guid: 702a84c8c349a412faef5393e927a682, type: 3}
   Balance_text: {fileID: 1666685184}
-  TotalBet_text: {fileID: 69738317}
-  MainBet_text: {fileID: 1790737832}
+  TotalBet_text: {fileID: 1790737832}
+  MainBet_text: {fileID: 69738317}
   Lines_text: {fileID: 1526757255}
   TotalWin_text: {fileID: 576684260}
   audioController: {fileID: 4877248867377730751}
