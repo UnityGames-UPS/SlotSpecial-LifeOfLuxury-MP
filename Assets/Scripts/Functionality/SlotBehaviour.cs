@@ -422,12 +422,20 @@ public class SlotBehaviour : MonoBehaviour
             {
                 BetCounter++;
             }
+            else
+            {
+                BetCounter = 0;
+            }
         }
         else
         {
             if (BetCounter > 0)
             {
                 BetCounter--;
+            }
+            else
+            {
+                BetCounter = SocketManager.initialData.Bets.Count - 1;
             }
         }
 
@@ -452,7 +460,7 @@ public class SlotBehaviour : MonoBehaviour
         if (MainBet_text) MainBet_text.text = (SocketManager.initialData.Bets[BetCounter] * Lines).ToString();
         //if (Lines_text) Lines_text.text = SocketManager.initialData.LinesCount[LineCounter].ToString();
         if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString();
-        if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
+        if (Balance_text) Balance_text.text = double.Parse(SocketManager.playerdata.Balance).ToString("F3");
 
         //HACK: To Be Uncommented After Parse Sheet Recieving
         CompareBalance();
@@ -567,7 +575,7 @@ public class SlotBehaviour : MonoBehaviour
     {
         currentBalance = balance;
 
-        Balance_text.text = currentBalance.ToString();
+        Balance_text.text = currentBalance.ToString("F3");
         TotalWin_text.text = win.ToString();
 
         if (!won)
@@ -637,7 +645,7 @@ public class SlotBehaviour : MonoBehaviour
             balance = balance - bet;
         }
 
-        if (Balance_text) Balance_text.text = balance.ToString();
+        if (Balance_text) Balance_text.text = balance.ToString("F3");
 
         SocketManager.AccumulateResult(BetCounter);
 
@@ -720,7 +728,7 @@ public class SlotBehaviour : MonoBehaviour
 
         if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString();
 
-        if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString();
+        if (Balance_text) Balance_text.text = double.Parse(SocketManager.playerdata.Balance).ToString("F3");
 
         balance = double.Parse(SocketManager.playerdata.Balance);
         currentBalance = double.Parse(SocketManager.playerdata.Balance);
@@ -729,11 +737,11 @@ public class SlotBehaviour : MonoBehaviour
         {
             m_GambleController.CheckGamble();
 
-            if (!IsAutoSpin)
-            {
-                SlotStart_Button.gameObject.SetActive(false);
-                Take_Button.gameObject.SetActive(true);
-            }
+            //if (!IsAutoSpin)
+            //{
+            //    SlotStart_Button.gameObject.SetActive(false);
+            //    Take_Button.gameObject.SetActive(true);
+            //}
         }
 
         CheckWinPopups();
