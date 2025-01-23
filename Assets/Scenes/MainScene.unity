@@ -943,8 +943,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Winnings are calculated based on bet per line \nBet per line = Total bet
-    / Number of lines"
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 627060f915a2a4c4f96f1a5027953eae, type: 2}
   m_sharedMaterial: {fileID: -1720569937284858135, guid: 627060f915a2a4c4f96f1a5027953eae, type: 2}
@@ -971,7 +970,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 38
+  m_fontSize: 25
   m_fontSizeBase: 25
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2244,7 +2243,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'RTP value: 95.93%'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 627060f915a2a4c4f96f1a5027953eae, type: 2}
   m_sharedMaterial: {fileID: -1720569937284858135, guid: 627060f915a2a4c4f96f1a5027953eae, type: 2}
@@ -2271,7 +2270,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 38.5
+  m_fontSize: 29.2
   m_fontSizeBase: 29.2
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -9423,7 +9422,7 @@ MonoBehaviour:
   slotManager: {fileID: 2046803210}
   uiManager: {fileID: 377874625}
   bonusdata: []
-  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZDgzZDdkYTI3YmY5MDI0NDNlYjRkZSIsInVzZXJuYW1lIjoiZGFyc2hhbiIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3MzY5MzQ3NTEsImV4cCI6MTczNzUzOTU1MX0.Z29bH7Vzzxwfq_ft1yhZ9OtHCbmOOrypFA7zAWf_bSw
+  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3N2JhM2QzOTgxYmU0MzlkMjkyYzgzYSIsInVzZXJuYW1lIjoiTWVldCIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3Mzc2MzE3NjgsImV4cCI6MTczODIzNjU2OH0.6kyil-J8NmNDb3US8QevBjtVgFQ4DLsnru1NMtSyijI
 --- !u!114 &500036493
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31608,7 +31607,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'RTP value: 95.93%'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 627060f915a2a4c4f96f1a5027953eae, type: 2}
   m_sharedMaterial: {fileID: -1720569937284858135, guid: 627060f915a2a4c4f96f1a5027953eae, type: 2}
@@ -31635,7 +31634,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 38.5
+  m_fontSize: 29.2
   m_fontSizeBase: 29.2
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -35793,7 +35792,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: win 10 free spins with any 3, 4 or 5 <sprite=1> symbol win starting from
+  m_text: win 3 free spins with any 3, 4 or 5 <sprite=1> symbol win starting from
     the leftmost reel. during the free spins the winning combinations composed by
     <sprite=0> <sprite=2> <sprite=3> <sprite=4> and <sprite=5> are symbol multipliers
     begin at value 1 at the start of the free spins. each <sprite=0> <sprite=2> <sprite=3>
