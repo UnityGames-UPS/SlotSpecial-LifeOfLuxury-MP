@@ -391,7 +391,7 @@ public class SocketIOManager : MonoBehaviour
         message.data = new BetData();
         message.data.currentBet = currBet;
         message.data.spins = 1;
-        message.data.currentLines = 25;
+        message.data.currentLines = 1;
         message.id = "SPIN";
         // Serialize message data to JSON
         string json = JsonUtility.ToJson(message);
@@ -545,7 +545,7 @@ public class FreeSpin
 {
     public bool isFreeSpin { get; set; }
     public int freeSpinCount { get; set; }
-    public List<int> freeSpinMultipliers { get; set; }
+    public List<double> freeSpinMultipliers { get; set; }
 }
 
 
@@ -597,7 +597,7 @@ public class Symbol
 
     // This property will hold the properly deserialized list of lists of integers
     [JsonIgnore]
-    public List<List<int>> Multiplier { get; private set; }
+    public List<List<double>> Multiplier { get; private set; }
 
     // Custom deserialization method to handle the conversion
     [OnDeserialized]
@@ -606,12 +606,12 @@ public class Symbol
         // Handle the case where multiplier is an object (empty in JSON)
         if (MultiplierObject is JObject)
         {
-            Multiplier = new List<List<int>>();
+            Multiplier = new List<List<double>>();
         }
         else
         {
             // Deserialize normally assuming it's an array of arrays
-            Multiplier = JsonConvert.DeserializeObject<List<List<int>>>(MultiplierObject.ToString());
+            Multiplier = JsonConvert.DeserializeObject<List<List<double>>>(MultiplierObject.ToString());
         }
     }
     public int freeSpin { get; set; }
@@ -626,7 +626,7 @@ public class Symbol
 [Serializable]
 public class PlayerData
 {
-    public string Balance { get; set; }
+    public double Balance { get; set; }
     public double haveWon { get; set; }
     public double currentWining { get; set; }
     public double totalbet { get; set; }

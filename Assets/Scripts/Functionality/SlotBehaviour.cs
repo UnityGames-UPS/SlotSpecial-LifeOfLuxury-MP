@@ -171,7 +171,7 @@ public class SlotBehaviour : MonoBehaviour
 
     private int BetCounter = 0;
     private int LineCounter = 0;
-    protected int Lines = 25;
+    protected int Lines = 1;
 
     private double currentBalance = 0;
     private double currentTotalBet = 0;
@@ -365,7 +365,10 @@ public class SlotBehaviour : MonoBehaviour
     private IEnumerator StopAutoSpinCoroutine()
     {
         yield return new WaitUntil(() => !IsSpinning);
-        ToggleButtonGrp(true);
+        if (SocketManager.resultData.freeSpin.freeSpinCount > 0)
+        {
+            ToggleButtonGrp(false);
+        }
         if (AutoSpinRoutine != null || tweenroutine != null)
         {
             StopCoroutine(AutoSpinRoutine);
@@ -450,7 +453,7 @@ public class SlotBehaviour : MonoBehaviour
     internal void SetInitialUI()
     {
         //HACK: To Be Uncommented After Parse Sheet Recieving
-        currentBalance = double.Parse(SocketManager.playerdata.Balance);
+        currentBalance = SocketManager.playerdata.Balance;
 
         BetCounter = 0;
         LineCounter = 0;
@@ -460,7 +463,7 @@ public class SlotBehaviour : MonoBehaviour
         if (MainBet_text) MainBet_text.text = (SocketManager.initialData.Bets[BetCounter] * Lines).ToString();
         //if (Lines_text) Lines_text.text = SocketManager.initialData.LinesCount[LineCounter].ToString();
         if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString();
-        if (Balance_text) Balance_text.text = double.Parse(SocketManager.playerdata.Balance).ToString("F3");
+        if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString("F3");
 
         //HACK: To Be Uncommented After Parse Sheet Recieving
         CompareBalance();
@@ -728,10 +731,10 @@ public class SlotBehaviour : MonoBehaviour
 
         if (TotalWin_text) TotalWin_text.text = SocketManager.playerdata.currentWining.ToString();
 
-        if (Balance_text) Balance_text.text = double.Parse(SocketManager.playerdata.Balance).ToString("F3");
+        if (Balance_text) Balance_text.text = SocketManager.playerdata.Balance.ToString("F3");
 
-        balance = double.Parse(SocketManager.playerdata.Balance);
-        currentBalance = double.Parse(SocketManager.playerdata.Balance);
+        balance = SocketManager.playerdata.Balance;
+        currentBalance = SocketManager.playerdata.Balance;
 
         if(!IsFreeSpin && !SocketManager.resultData.freeSpin.isFreeSpin && SocketManager.playerdata.currentWining > 0)
         {
@@ -768,8 +771,14 @@ public class SlotBehaviour : MonoBehaviour
             IsSpinning = false;
         }
 
+        if (SocketManager.resultData.freeSpin.freeSpinCount > 0)
+        {
+            ToggleButtonGrp(false);
+        }
+
         if (SocketManager.resultData.freeSpin.isFreeSpin)
         {
+           
             if (IsFreeSpin)
             {
                 IsFreeSpin = false;

@@ -42,7 +42,7 @@ public class UIManager : MonoBehaviour
     private TMP_Text Free_Text;
     [SerializeField]
     private Button FreeSpin_Button;
-    private List<int> m_TempValues = new List<int>() { 0, 0, 0, 0, 0 };
+    private List<double> m_TempValues = new List<double>() { 0, 0, 0, 0, 0 };
 
     [Header("Title View References")]
     [SerializeField]
@@ -296,7 +296,7 @@ public class UIManager : MonoBehaviour
         });
     }
 
-    internal void UpdateFreeSpinUI(List<int> m_values)
+    internal void UpdateFreeSpinUI(List<double> m_values)
     {
         for(int i = 0; i < m_values.Count; i++)
         {
@@ -314,7 +314,7 @@ public class UIManager : MonoBehaviour
         }
         m_TempValues.Clear();
         m_TempValues.TrimExcess();
-        m_TempValues = new List<int>(m_values);
+        m_TempValues = new List<double>(m_values);
     }
 
     internal void ADfunction()
@@ -349,15 +349,15 @@ public class UIManager : MonoBehaviour
             string text = null;
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += "<color=white>5</color>  " + paylines.symbols[i].Multiplier[0][0].ToString("f3") + "x";
+                text += "<color=white>5</color>  " + paylines.symbols[i].Multiplier[0][0].ToString("f2") + "x";
             }
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += "\n<color=white>4</color>  " + paylines.symbols[i].Multiplier[1][0].ToString("f3") + "x";
+                text += "\n<color=white>4</color>  " + paylines.symbols[i].Multiplier[1][0].ToString("f2") + "x";
             }
             if (paylines.symbols[i].Multiplier[0][0] != 0)
             {
-                text += "\n<color=white>3</color>  " + paylines.symbols[i].Multiplier[2][0].ToString("f3") + "x";
+                text += "\n<color=white>3</color>  " + paylines.symbols[i].Multiplier[2][0].ToString("f2") + "x";
             }
             //if (paylines.symbols[i].Multiplier[0][0] != 0)
             //{
