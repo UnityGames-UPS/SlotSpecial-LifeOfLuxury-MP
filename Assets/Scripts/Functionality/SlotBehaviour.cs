@@ -447,7 +447,7 @@ public class SlotBehaviour : MonoBehaviour
         currentTotalBet = SocketManager.initialData.Bets[BetCounter] * Lines;
 
         //HACK: To Be Uncommented After Parse Sheet Recieving
-        CompareBalance();
+       
     }
 
     internal void SetInitialUI()
