@@ -126,6 +126,9 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private SlotBehaviour slotManager;
 
+    [SerializeField]
+    private SocketIOManager socketManager;
+
     private bool isMusic = true;
     private bool isSound = true;
     private bool isExit = false;
@@ -182,7 +185,7 @@ public class UIManager : MonoBehaviour
         if (YesQuit_Button) YesQuit_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
 
         if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.RemoveAllListeners();
-        if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
+        if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.AddListener(delegate { CallOnExitFunction(); socketManager.ReactNativeCallOnFailedToConnect(); }); //BackendChanges
 
         if (CloseAD_Button) CloseAD_Button.onClick.RemoveAllListeners();
         if (CloseAD_Button) CloseAD_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
