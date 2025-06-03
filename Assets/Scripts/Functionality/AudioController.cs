@@ -75,7 +75,6 @@ public class AudioController : MonoBehaviour
 
     private void OnApplicationFocus(bool focus)
     {
-        Debug.Log(focus);
         if (!focus)
         {
             m_On_Application_Out_Of_Focus?.Invoke();

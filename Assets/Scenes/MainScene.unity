@@ -9423,7 +9423,7 @@ MonoBehaviour:
   slotManager: {fileID: 2046803210}
   uiManager: {fileID: 377874625}
   bonusdata: []
-  testToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3N2JhM2QzOTgxYmU0MzlkMjkyYzgzYSIsInVzZXJuYW1lIjoiTWVldCIsInJvbGUiOiJwbGF5ZXIiLCJpYXQiOjE3Mzc2MzE3NjgsImV4cCI6MTczODIzNjU2OH0.6kyil-J8NmNDb3US8QevBjtVgFQ4DLsnru1NMtSyijI
+  testToken: ffde39ff3c364fddb8cc71de9d3cffe7
   JSManager: {fileID: 1450211609}
 --- !u!114 &500036493
 MonoBehaviour:
