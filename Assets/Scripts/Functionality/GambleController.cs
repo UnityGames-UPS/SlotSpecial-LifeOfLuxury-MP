@@ -255,7 +255,7 @@ public class GambleController : MonoBehaviour
         //TODO: Rotate Animation Here
         DOTweenUIManager.Instance.RotateUI(m_ShowCard.rectTransform, "Y", 2f, 360f * 2.5f);
         yield return new WaitForSeconds(2f); // Round Animation Show Time
-        ShowGambleUI(SocketManager.gambleData.playerWon, SocketManager.gambleData.currentWinning, SocketManager.gambleData.balance, SocketManager.gambleData.cardId);
+        ShowGambleUI(SocketManager.gambleData.payload.playerWon, SocketManager.gambleData.payload.currentWinning, SocketManager.gambleData.player.balance, SocketManager.gambleData.payload.cardId);
         SocketManager.isGambledone = false;
         yield return new WaitForSeconds(4f); // Wait Time For Card Show
         StartGambleUI();
