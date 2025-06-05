@@ -2,8 +2,9 @@ name: Unity WebGL Automatic Build 👽✨🚀
 
 on:
   pull_request:
-    branches:    
-      - 'dev-build'
+    types: [closed]
+    branches:
+      - "develop"
   workflow_dispatch:
 
 permissions:
@@ -25,8 +26,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT }}
-
+          token: ${{ GITHUB_TOKEN }}
 
       - name: Git LFS Pull
         run: |
@@ -45,11 +45,11 @@ jobs:
         run: |
           echo "LFS cache directory contents:"
           ls -al .git/lfs || echo ".git/lfs directory does not exist"
-          
+
         # Git LFS
       - name: Create LFS file list
         run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
-          
+
       # Cache Unity Library
       - name: Cache Library directory
         uses: actions/cache@v3
