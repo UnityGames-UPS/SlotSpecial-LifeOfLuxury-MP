@@ -304,7 +304,7 @@ public class SocketIOManager : MonoBehaviour
 
   internal void CloseSocket()
   {
-    SendDataWithNamespace("EXIT");
+    SendDataWithNamespace("game:exit");
   }
 
   private void ParseResponse(string jsonObject)
