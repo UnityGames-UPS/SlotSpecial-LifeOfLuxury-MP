@@ -55,7 +55,7 @@ mergeInto(LibraryManager.library, {
             }
           });
         }
-        window.parent.postMessage(message, "*");
+        window.parent.dispatchReactUnityEvent(message);   //old code : window.parent.postMessage(message, "*");
       }
     }
 });

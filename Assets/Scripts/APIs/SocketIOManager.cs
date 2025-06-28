@@ -125,31 +125,45 @@ public class SocketIOManager : MonoBehaviour
     options.ConnectWith = Best.SocketIO.Transports.TransportTypes.WebSocket; //BackendChanges
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-    string url = Application.absoluteURL;
-    Debug.Log("Unity URL : " + url);
-    ExtractUrlAndToken(url);
-
-    Func<SocketManager, Socket, object> webAuthFunction = (manager, socket) =>
-    {
-      return new
-      {
-        token = testToken,
-      };
-    };
-    options.Auth = webAuthFunction;
+        JSManager.SendCustomMessage("authToken");
+        StartCoroutine(WaitForAuthToken(options));
 #else
     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
     {
       return new
       {
-        token = testToken,
+        token = testToken
       };
     };
     options.Auth = authFunction;
-#endif
-
-    // Proceed with connecting to the server
     SetupSocketManager(options);
+#endif
+    // #if UNITY_WEBGL && !UNITY_EDITOR
+    //     string url = Application.absoluteURL;
+    //     Debug.Log("Unity URL : " + url);
+    //     ExtractUrlAndToken(url);
+
+    //     Func<SocketManager, Socket, object> webAuthFunction = (manager, socket) =>
+    //     {
+    //       return new
+    //       {
+    //         token = testToken,
+    //       };
+    //     };
+    //     options.Auth = webAuthFunction;
+    // #else
+    //     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
+    //     {
+    //       return new
+    //       {
+    //         token = testToken,
+    //       };
+    //     };
+    //     options.Auth = authFunction;
+    // #endif
+
+    //     // Proceed with connecting to the server
+    //     SetupSocketManager(options);
   }
 
 
@@ -172,8 +186,7 @@ public class SocketIOManager : MonoBehaviour
     {
       return new
       {
-        token = myAuth,
-        gameId = gameID
+        token = myAuth
       };
     };
     options.Auth = authFunction;
@@ -190,7 +203,7 @@ public class SocketIOManager : MonoBehaviour
 #if UNITY_EDITOR
     this.manager = new SocketManager(new Uri(TestSocketURI), options);
 #else
-        this.manager = new SocketManager(new Uri(SocketURI), options);
+    this.manager = new SocketManager(new Uri(SocketURI), options);
 #endif
 
     if (string.IsNullOrEmpty(nameSpace))
@@ -300,11 +313,12 @@ public class SocketIOManager : MonoBehaviour
     }
   }
 
-
-
   internal void CloseSocket()
   {
     SendDataWithNamespace("game:exit");
+#if UNITY_WEBGL && !UNITY_EDITOR
+    JSManager.SendCustomMessage("OnExit");
+#endif
   }
 
   private void ParseResponse(string jsonObject)
@@ -382,6 +396,9 @@ public class SocketIOManager : MonoBehaviour
   {
     slotManager.shuffleInitialMatrix();
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+    JSManager.SendCustomMessage("OnEnter");
+#endif
     slotManager.SetInitialUI();
 
     isLoaded = true;
