@@ -30,7 +30,7 @@ public class SocketIOManager : MonoBehaviour
 
   protected string SocketURI = null;
 
-  protected string TestSocketURI = "https://frnp4zmn-5000.inc1.devtunnels.ms/";
+  protected string TestSocketURI = "http://localhost:5000/"; 
   //protected string TestSocketURI = "https://game-crm-rtp-backend.onrender.com/";
 
   [SerializeField]
@@ -220,7 +220,7 @@ public class SocketIOManager : MonoBehaviour
     gameSocket.On<string>(SocketIOEventTypes.Disconnect, OnDisconnected);
     gameSocket.On<string>(SocketIOEventTypes.Error, OnError);
     gameSocket.On<string>("game:init", OnListenEvent);
-    gameSocket.On<string>("spin:result", OnListenEvent);
+    gameSocket.On<string>("result", OnListenEvent);
     gameSocket.On<string>("gamble:result", OnGameResult);
     gameSocket.On<bool>("socketState", OnSocketState);
     gameSocket.On<string>("internalError", OnSocketError);
@@ -408,11 +408,12 @@ public class SocketIOManager : MonoBehaviour
   {
     isResultdone = false;
     MessageData message = new MessageData();
-    message.currentBet = currBet;
+    message.type = "SPIN";
+    message.payload.betIndex = currBet;
 
     // Serialize message data to JSON
     string json = JsonUtility.ToJson(message);
-    SendDataWithNamespace("spin:request", json);
+    SendDataWithNamespace("request", json);
   }
 
   private List<string> RemoveQuotes(List<string> stringList)
@@ -541,7 +542,18 @@ public class GambleData
 [Serializable]
 public class MessageData
 {
-  public int currentBet;
+  public string type;
+  public Data payload = new();
+
+}
+[Serializable]
+public class Data
+{
+  public int betIndex;
+  public string Event;
+  public List<int> index;
+  public int option;
+
 }
 
 [Serializable]
