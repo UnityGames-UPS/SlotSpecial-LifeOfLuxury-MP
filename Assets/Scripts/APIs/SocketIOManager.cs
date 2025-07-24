@@ -73,7 +73,7 @@ public class SocketIOManager : MonoBehaviour
       lastWinning = resultData.payload.winAmount,
     };
     string json = JsonUtility.ToJson(data);
-    SendDataWithNamespace("gamble:request", json);
+    SendDataWithNamespace("request", json);
   }
 
   internal void SelectGambleCard(string m_red_black)
@@ -86,7 +86,7 @@ public class SocketIOManager : MonoBehaviour
       lastWinning = resultData.payload.winAmount,
     };
     string json = JsonUtility.ToJson(data);
-    SendDataWithNamespace("gamble:request", json);
+    SendDataWithNamespace("request", json);
   }
 
   internal void CollectGambledAmount()
@@ -97,7 +97,7 @@ public class SocketIOManager : MonoBehaviour
       Event = "collect",
     };
     string json = JsonUtility.ToJson(data);
-    SendDataWithNamespace("gamble:request", json);
+    SendDataWithNamespace("request", json);
   }
   #endregion
 
@@ -395,19 +395,17 @@ public class SocketIOManager : MonoBehaviour
   private void PopulateSlotSocket()
   {
     slotManager.shuffleInitialMatrix();
-
 #if UNITY_WEBGL && !UNITY_EDITOR
     JSManager.SendCustomMessage("OnEnter");
 #endif
     slotManager.SetInitialUI();
-
     isLoaded = true;
   }
 
   internal void AccumulateResult(int currBet)
   {
     isResultdone = false;
-    MessageData message = new MessageData();
+    MessageData message = new();
     message.type = "SPIN";
     message.payload.betIndex = currBet;
 
