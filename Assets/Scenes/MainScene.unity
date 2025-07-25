@@ -9294,7 +9294,7 @@ MonoBehaviour:
   slotManager: {fileID: 2046803210}
   uiManager: {fileID: 377874625}
   bonusdata: []
-  testToken: 7d4ddbb6de60436ea1d7835270b3b31b
+  testToken: 4fe1307c054843b99e751523b056056e
   JSManager: {fileID: 1450211609}
 --- !u!1 &502207785
 GameObject:
@@ -33349,6 +33349,8 @@ MonoBehaviour:
   m_BlackButton: {fileID: 2114282801}
   m_TakeButton: {fileID: 682889363}
   m_SlotStartButton: {fileID: 567733206}
+  BetPlus: {fileID: 1550566148}
+  BetMinus: {fileID: 685179760}
   m_ShowCard: {fileID: 2065132543}
   m_ResultCard: {fileID: 937322008}
   m_Upper_Sprites:

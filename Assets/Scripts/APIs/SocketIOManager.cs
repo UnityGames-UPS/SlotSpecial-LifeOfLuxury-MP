@@ -19,7 +19,7 @@ public class SocketIOManager : MonoBehaviour
   internal UiData initUIData = null;
   internal Root resultData = null;
   internal Player playerdata = null;
-  internal GambleResult gambleData = null; //TODO: Change this variables type
+  internal Root gambleData = null; //TODO: Change this variables type
   [SerializeField]
   internal List<string> bonusdata = null;
   //WebSocket currentSocket = null;
@@ -30,8 +30,8 @@ public class SocketIOManager : MonoBehaviour
 
   protected string SocketURI = null;
 
-  protected string TestSocketURI = "http://localhost:5000/"; 
-  //protected string TestSocketURI = "https://game-crm-rtp-backend.onrender.com/";
+  // protected string TestSocketURI = "http://localhost:5000/"; 
+  protected string TestSocketURI = "https://sl3l5zz3-5000.inc1.devtunnels.ms/";
 
   [SerializeField]
   private string testToken;
@@ -64,38 +64,31 @@ public class SocketIOManager : MonoBehaviour
   }
 
   #region GAMBLE GAME
-  internal void StartGambleGame()
+  internal void GambleInit()
   {
-    GambleData data = new()
-    {
-      type = "BLACKRED",
-      Event = "init",
-      lastWinning = resultData.payload.winAmount,
-    };
+    MessageData data = new();
+    data.type = "GAMBLE";
+    data.payload.Event = "init";
+
     string json = JsonUtility.ToJson(data);
     SendDataWithNamespace("request", json);
   }
 
-  internal void SelectGambleCard(string m_red_black)
+  internal void GambleDraw(string m_red_black)
   {
-    GambleData data = new()
-    {
-      type = "BLACKRED",
-      Event = "draw",
-      cardSelected = m_red_black.ToUpper(),
-      lastWinning = resultData.payload.winAmount,
-    };
+    MessageData data = new();
+    data.type = "GAMBLE";
+    data.payload.Event = "draw";
+    data.payload.cardSelected = m_red_black;
     string json = JsonUtility.ToJson(data);
     SendDataWithNamespace("request", json);
   }
 
-  internal void CollectGambledAmount()
+  internal void GambleCollect()
   {
-    GambleData data = new()
-    {
-      type = "BLACKRED",
-      Event = "collect",
-    };
+    MessageData data = new();
+    data.type = "GAMBLE";
+    data.payload.Event = "collect";
     string json = JsonUtility.ToJson(data);
     SendDataWithNamespace("request", json);
   }
@@ -221,19 +214,11 @@ public class SocketIOManager : MonoBehaviour
     gameSocket.On<string>(SocketIOEventTypes.Error, OnError);
     gameSocket.On<string>("game:init", OnListenEvent);
     gameSocket.On<string>("result", OnListenEvent);
-    gameSocket.On<string>("gamble:result", OnGameResult);
+    gameSocket.On<string>("gamble:result", OnListenEvent);
     gameSocket.On<bool>("socketState", OnSocketState);
     gameSocket.On<string>("internalError", OnSocketError);
     gameSocket.On<string>("alert", OnSocketAlert);
     gameSocket.On<string>("AnotherDevice", OnSocketOtherDevice); //BackendChanges Finish
-  }
-  void OnGameResult(string data)
-  {
-    // Handle the game result here
-    Debug.Log("Gamble Result: " + data);
-    gambleData = JsonConvert.DeserializeObject<GambleResult>(data);
-
-    isGambledone = true;
   }
 
   // Connected event handler implementation
@@ -327,15 +312,13 @@ public class SocketIOManager : MonoBehaviour
     Root myData = JsonConvert.DeserializeObject<Root>(jsonObject);
 
     string id = myData.id;
-
+    playerdata = myData.player;
     switch (id)
     {
       case "initData":
         {
           initialData = myData.gameData;
           initUIData = myData.uiData;
-          playerdata = myData.player;
-          // bonusdata = myData.bonus;
           if (!SetInit)
           {
             PopulateSlotSocket();
@@ -349,9 +332,7 @@ public class SocketIOManager : MonoBehaviour
         }
       case "ResultData":
         {
-          // myData.FinalResultReel = ConvertListListIntToListString(myData.matrix);
           resultData = myData;
-          playerdata = myData.player;
           if (resultData.payload.wins.Count > 0)
           {
             winningCombinations = resultData.payload.wins;
@@ -363,16 +344,22 @@ public class SocketIOManager : MonoBehaviour
           isResultdone = true;
           break;
         }
-      case "GambleResult":
+      case "gambleInit":
         {
-          // Debug.Log(string.Concat("<color=yellow><b>", jsonObject, "</b></color>"));
-          // gambleData = myData.message;
+          gambleData = myData;
           isGambledone = true;
           break;
         }
-      case "GambleCollect":
+      case "gambleDraw":
         {
-          // Debug.Log(string.Concat("<color=yellow><b>", jsonObject, "</b></color>"));
+          gambleData = myData;
+          isGambledone = true;
+          break;
+        }
+      case "gambleCollect":
+        {
+          gambleData = myData;
+          isGambledone = true;
           break;
         }
       case "ExitUser":
@@ -529,15 +516,6 @@ public class GambleResultData
 }
 
 [Serializable]
-public class GambleData
-{
-  public string type;
-  public double lastWinning;
-  public string cardSelected;
-  public string Event;
-}
-
-[Serializable]
 public class MessageData
 {
   public string type;
@@ -551,6 +529,7 @@ public class Data
   public string Event;
   public List<int> index;
   public int option;
+  public string cardSelected;
 
 }
 
@@ -614,7 +593,9 @@ public class Jackpot
 [Serializable]
 public class Payload
 {
+  public bool playerWon { get; set; }
   public double winAmount { get; set; }
+  public int cardId { get; set; }
   public List<WinningCombination> wins { get; set; }
 }
 

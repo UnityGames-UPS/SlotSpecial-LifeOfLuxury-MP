@@ -26,6 +26,8 @@ public class GambleController : MonoBehaviour
   private Button m_TakeButton;
   [SerializeField]
   private Button m_SlotStartButton;
+  [SerializeField] private Button BetPlus;
+  [SerializeField] private Button BetMinus;
 
   [Header("Card Show References")]
   [SerializeField]
@@ -62,9 +64,6 @@ public class GambleController : MonoBehaviour
 
   private void Start()
   {
-    if (m_InitButton) m_InitButton.onClick.RemoveAllListeners();
-    if (m_InitButton) m_InitButton.onClick.AddListener(delegate { StartGamble(); m_InitButton.interactable = false; });
-
     if (m_RedButton) m_RedButton.onClick.RemoveAllListeners();
     if (m_RedButton) m_RedButton.onClick.AddListener(delegate { OnRedButtonClicked(); audioController.PlayButtonAudio(); });
 
@@ -74,10 +73,17 @@ public class GambleController : MonoBehaviour
     if (m_TakeButton) m_TakeButton.onClick.RemoveAllListeners();
     if (m_TakeButton) m_TakeButton.onClick.AddListener(delegate
     {
-      OnCollectButtonClicked();
-      ResetToDefault();
       audioController.PlayButtonAudio();
+      StartCoroutine(OnCollectButtonClicked());
     });
+
+    // m_GambleToggle.onValueChanged.AddListener((arg) =>
+    // {
+    //   if (arg)
+    //   {
+    //     if(m_Is_Gambling || )
+    //   }
+    // });
 
     m_ShowCard.gameObject.SetActive(true);
     m_ResultCard.gameObject.SetActive(false);
@@ -95,22 +101,30 @@ public class GambleController : MonoBehaviour
     {
       m_Is_Gambling = false;
       m_InitButton.interactable = true;
-      m_TakeButton.interactable = true;
+      m_TakeButton.interactable = false;
       m_InitButton.gameObject.SetActive(false);
       m_AutoPlayRef.gameObject.SetActive(true);
       m_Main_Game_Panel.SetActive(true);
       m_Gamble_Game_Panel.SetActive(false);
       m_TakeButton.gameObject.SetActive(false);
       m_SlotStartButton.gameObject.SetActive(true);
+      BetMinus.interactable = true;
+      BetMinus.interactable = true;
     }
   }
 
-  internal void CheckGamble()
+  internal void TurnOnGambleButton(bool init)
   {
     if (m_GambleToggle.isOn)
     {
+      m_InitButton.onClick.RemoveAllListeners();
+      m_InitButton.onClick.AddListener(() =>
+      {
+        StartCoroutine(StartGamble(init));
+        m_InitButton.interactable = false;
+      });
+      m_InitButton.interactable = true;
       m_InitButton.gameObject.SetActive(true);
-      m_AutoPlayRef.SetActive(false);
     }
     else
     {
@@ -119,20 +133,30 @@ public class GambleController : MonoBehaviour
     }
   }
 
-  internal void StartGamble()
+  internal IEnumerator StartGamble(bool init)
   {
+    m_TakeButton.interactable = false;
+    m_TakeButton.gameObject.SetActive(true);
+    BetPlus.interactable = false;
+    BetMinus.interactable = false;
+    m_SlotStartButton.gameObject.SetActive(false);
     if (m_SlotBehaviour.IsAutoSpin)
     {
       m_SlotBehaviour.WasAutoSpinOn = true;
       m_SlotBehaviour.StopAutoSpin();
     }
     m_Is_Gambling = true;
-    SocketManager.StartGambleGame();
-    StartGambleUI();
     m_Main_Game_Panel.SetActive(false);
     m_Gamble_Game_Panel.SetActive(true);
-    m_TakeButton.gameObject.SetActive(true);
-    m_SlotStartButton.gameObject.SetActive(false);
+
+    if (init)
+    {
+      SocketManager.isGambledone = false;
+      SocketManager.GambleInit();
+      yield return new WaitUntil(() => SocketManager.isGambledone);
+    }
+
+    StartGambleUI();
   }
 
   private void OnRedButtonClicked()
@@ -140,14 +164,12 @@ public class GambleController : MonoBehaviour
     m_RedButton.interactable = false;
     m_BlackButton.interactable = false;
 
-    SocketManager.SelectGambleCard("RED");
+    SocketManager.isGambledone = false;
+    SocketManager.GambleDraw("RED");
     if (m_GetGambleResult != null)
     {
-      if (m_GetGambleResult != null)
-      {
-        StopCoroutine(m_GetGambleResult);
-        m_GetGambleResult = null;
-      }
+      StopCoroutine(m_GetGambleResult);
+      m_GetGambleResult = null;
     }
     m_GetGambleResult = StartCoroutine(GetGambleResult());
   }
@@ -157,29 +179,24 @@ public class GambleController : MonoBehaviour
     m_RedButton.interactable = false;
     m_BlackButton.interactable = false;
 
-    SocketManager.SelectGambleCard("BLACK");
+    SocketManager.isGambledone = false;
+    SocketManager.GambleDraw("BLACK");
     if (m_GetGambleResult != null)
     {
-      if (m_GetGambleResult != null)
-      {
-        StopCoroutine(m_GetGambleResult);
-        m_GetGambleResult = null;
-      }
+      StopCoroutine(m_GetGambleResult);
+      m_GetGambleResult = null;
     }
     m_GetGambleResult = StartCoroutine(GetGambleResult());
   }
 
-  private void OnCollectButtonClicked()
+  private IEnumerator OnCollectButtonClicked()
   {
-    SocketManager.CollectGambledAmount();
-    if (m_GetGambleResult != null)
-    {
-      if (m_GetGambleResult != null)
-      {
-        StopCoroutine(m_GetGambleResult);
-        m_GetGambleResult = null;
-      }
-    }
+    m_TakeButton.interactable = false;
+    SocketManager.isGambledone = false;
+    SocketManager.GambleCollect();
+    yield return new WaitUntil(() => SocketManager.isGambledone);
+    m_Is_Gambling = false;
+    ResetToDefault();
   }
 
   private void StartGambleUI()
@@ -191,6 +208,27 @@ public class GambleController : MonoBehaviour
     m_BlackButton.interactable = true;
   }
 
+  private IEnumerator GetGambleResult()
+  {
+    yield return new WaitUntil(() => SocketManager.isGambledone);
+    //TODO: Rotate Animation Here
+    DOTweenUIManager.Instance.RotateUI(m_ShowCard.rectTransform, "Y", 2f, 360f * 2.5f);
+    yield return new WaitForSeconds(2f); // Round Animation Show Time
+    ShowGambleUI(SocketManager.gambleData.payload.playerWon, SocketManager.gambleData.payload.winAmount, SocketManager.gambleData.player.balance, SocketManager.gambleData.payload.cardId);
+
+    if (SocketManager.gambleData.payload.playerWon)
+    {
+      m_TakeButton.interactable = true;
+      TurnOnGambleButton(false);
+    }
+    else
+    {
+      yield return new WaitForSeconds(2f);
+      m_Is_Gambling = false;
+      ResetToDefault();
+    }
+  }
+
   private void ShowGambleUI(bool won, double win, double balance, int id)
   {
     m_ShowCard.gameObject.SetActive(false);
@@ -200,15 +238,6 @@ public class GambleController : MonoBehaviour
     PushIndex(id);
     m_SlotBehaviour.UpdateBottomUI(won, win, balance);
   }
-
-  private void AssignUpperSprites()
-  {
-    for (int i = 0; i < m_Upper_Sprites.Count; i++)
-    {
-      m_Upper_Sprites[i].sprite = m_Mini_Card_Sprites[m_Sprite_Indices[i]];
-    }
-  }
-
   private void PushIndex(int index)
   {
     int temp = index;
@@ -220,6 +249,14 @@ public class GambleController : MonoBehaviour
       temp = temp_2;
     }
     AssignUpperSprites();
+  }
+
+  private void AssignUpperSprites()
+  {
+    for (int i = 0; i < m_Upper_Sprites.Count; i++)
+    {
+      m_Upper_Sprites[i].sprite = m_Mini_Card_Sprites[m_Sprite_Indices[i]];
+    }
   }
 
   private IEnumerator Reset()
@@ -244,20 +281,7 @@ public class GambleController : MonoBehaviour
       m_SlotBehaviour.AutoSpin();
       m_SlotBehaviour.WasAutoSpinOn = false;
     }
-
     StopCoroutine(m_ResetToDefault);
     m_ResetToDefault = null;
-  }
-
-  private IEnumerator GetGambleResult()
-  {
-    yield return new WaitUntil(() => SocketManager.isGambledone);
-    //TODO: Rotate Animation Here
-    DOTweenUIManager.Instance.RotateUI(m_ShowCard.rectTransform, "Y", 2f, 360f * 2.5f);
-    yield return new WaitForSeconds(2f); // Round Animation Show Time
-    ShowGambleUI(SocketManager.gambleData.payload.playerWon, SocketManager.gambleData.payload.currentWinning, SocketManager.gambleData.player.balance, SocketManager.gambleData.payload.cardId);
-    SocketManager.isGambledone = false;
-    yield return new WaitForSeconds(4f); // Wait Time For Card Show
-    StartGambleUI();
   }
 }

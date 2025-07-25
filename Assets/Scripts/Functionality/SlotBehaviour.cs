@@ -579,11 +579,6 @@ public class SlotBehaviour : MonoBehaviour
 
     Balance_text.text = currentBalance.ToString("F3");
     TotalWin_text.text = win.ToString();
-
-    if (!won)
-    {
-      m_GambleController.ResetToDefault();
-    }
   }
 
   //manage the Routine for spinning of the slots
@@ -734,11 +729,6 @@ public class SlotBehaviour : MonoBehaviour
     balance = SocketManager.playerdata.balance;
     currentBalance = SocketManager.playerdata.balance;
 
-    if (!IsFreeSpin && !SocketManager.resultData.features.freeSpin.isFreeSpin && SocketManager.resultData.payload.winAmount > 0)
-    {
-      m_GambleController.CheckGamble();
-    }
-
     CheckWinPopups();
 
     if (IsFreeSpin || SocketManager.resultData.features.freeSpin.isFreeSpin)
@@ -783,6 +773,10 @@ public class SlotBehaviour : MonoBehaviour
         StopAutoSpin();
         yield return new WaitForSeconds(0.1f);
       }
+    }
+    if (!IsFreeSpin && !SocketManager.resultData.features.freeSpin.isFreeSpin && SocketManager.resultData.payload.winAmount > 0 && !IsAutoSpin)
+    {
+      m_GambleController.TurnOnGambleButton(true);
     }
   }
 
@@ -979,14 +973,12 @@ public class SlotBehaviour : MonoBehaviour
 
   void ToggleButtonGrp(bool toggle)
   {
-
     if (SlotStart_Button) SlotStart_Button.interactable = toggle;
     if (MaxBet_Button) MaxBet_Button.interactable = toggle;
     if (AutoSpinStart_Button) AutoSpinStart_Button.interactable = toggle;
     if (TBetMinus_Button) TBetMinus_Button.interactable = toggle;
     if (TBetPlus_Button) TBetPlus_Button.interactable = toggle;
     if (uiManager.Settings_Button) uiManager.Settings_Button.interactable = toggle;
-
   }
 
   //start the icons animation
