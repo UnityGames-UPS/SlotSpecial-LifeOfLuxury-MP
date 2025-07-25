@@ -304,7 +304,6 @@ public class SlotBehaviour : MonoBehaviour
         FreeSpinRoutine = null;
       }
       FreeSpinRoutine = StartCoroutine(FreeSpinCoroutine(spins));
-
     }
   }
 
@@ -393,29 +392,6 @@ public class SlotBehaviour : MonoBehaviour
     if (MainBet_text) MainBet_text.text = (SocketManager.initialData.bets[BetCounter] * 25).ToString();
   }
 
-  private void ChangeLine(bool IncDec)
-  {
-    if (audioController) audioController.PlayButtonAudio();
-    //if (IncDec)
-    //{
-    //    if(LineCounter < SocketManager.initialData.LinesCount.Count - 1)
-    //    {
-    //        LineCounter++;
-    //    }
-    //}
-    //else
-    //{
-    //    if (LineCounter > 0)
-    //    {
-    //        LineCounter--;
-    //    }
-    //}
-
-    //if (Lines_text) Lines_text.text = SocketManager.initialData.LinesCount[LineCounter].ToString();
-
-  }
-
-
   private void ChangeBet(bool IncDec)
   {
     if (audioController) audioController.PlayButtonAudio();
@@ -445,9 +421,6 @@ public class SlotBehaviour : MonoBehaviour
     if (TotalBet_text) TotalBet_text.text = SocketManager.initialData.bets[BetCounter].ToString();
     if (MainBet_text) MainBet_text.text = (SocketManager.initialData.bets[BetCounter] * Lines).ToString();
     currentTotalBet = SocketManager.initialData.bets[BetCounter] * Lines;
-
-    //HACK: To Be Uncommented After Parse Sheet Recieving
-
   }
 
   internal void SetInitialUI()
@@ -809,31 +782,28 @@ public class SlotBehaviour : MonoBehaviour
 
   internal void CheckWinPopups()
   {
-    //Check Winnings;
-    // if (SocketManager.resultData.winningCombinations.Count > 0)
-    // {
-    //   if (m_Is_5_Of_A_Kind)
-    //   {
-    //     //Play The 5 Of A Kind Animation
-    //     if (audioController) audioController.PlayMegaWinAudio();
-    //     uiManager.PopulateWin(2, SocketManager.playerdata.currentWining);
-    //   }
-    //   else if (SocketManager.playerdata.currentWining >= (currentTotalBet * Lines))
-    //   {
-    //     //Play The Big Win Animation
-    //     if (audioController) audioController.PlayMegaWinAudio();
-    //     uiManager.PopulateWin(1, SocketManager.playerdata.currentWining);
-    //   }
-    //   else
-    //   {
-    //     if (audioController) audioController.PlayWinAudio();
-    //     CheckPopups = false;
-    //   }
-    // }
-    // else
-    // {
-    //   CheckPopups = false;
-    // }
+    if (SocketManager.resultData.payload.wins.Count > 0)
+    {
+      if (m_Is_5_Of_A_Kind)
+      {
+        if (audioController) audioController.PlayMegaWinAudio();
+        uiManager.PopulateWin(2, SocketManager.resultData.payload.winAmount);
+      }
+      else if (SocketManager.resultData.payload.winAmount >= (currentTotalBet * Lines))
+      {
+        if (audioController) audioController.PlayMegaWinAudio();
+        uiManager.PopulateWin(1, SocketManager.resultData.payload.winAmount);
+      }
+      else
+      {
+        if (audioController) audioController.PlayWinAudio();
+        CheckPopups = false;
+      }
+    }
+    else
+    {
+      CheckPopups = false;
+    }
     CheckPopups = false;
   }
 
@@ -941,7 +911,7 @@ public class SlotBehaviour : MonoBehaviour
 
   internal void CallCloseSocket()
   {
-    SocketManager.CloseSocket();
+    StartCoroutine(SocketManager.CloseSocket());
   }
 
   Color SetRandomBrightColor()

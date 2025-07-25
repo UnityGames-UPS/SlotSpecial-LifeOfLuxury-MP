@@ -182,13 +182,13 @@ public class UIManager : MonoBehaviour
     if (NoQuit_Button) NoQuit_Button.onClick.AddListener(delegate { if (!isExit) { ClosePopup(QuitPopup_Object); } audioController.PlayButtonAudio(); });
 
     if (YesQuit_Button) YesQuit_Button.onClick.RemoveAllListeners();
-    if (YesQuit_Button) YesQuit_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
+    if (YesQuit_Button) YesQuit_Button.onClick.AddListener(delegate { CallOnExitFunction();});
 
     if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.RemoveAllListeners();
     if (CloseDisconnect_Button) CloseDisconnect_Button.onClick.AddListener(delegate { CallOnExitFunction(); }); //BackendChanges
 
     if (CloseAD_Button) CloseAD_Button.onClick.RemoveAllListeners();
-    if (CloseAD_Button) CloseAD_Button.onClick.AddListener(delegate { CallOnExitFunction(); audioController.PlayButtonAudio(); });
+    if (CloseAD_Button) CloseAD_Button.onClick.AddListener(delegate { CallOnExitFunction(); });
 
     if (LBExit_Button) LBExit_Button.onClick.RemoveAllListeners();
     if (LBExit_Button) LBExit_Button.onClick.AddListener(delegate { ClosePopup(LBPopup_Object); audioController.PlayButtonAudio(); });
@@ -236,20 +236,28 @@ public class UIManager : MonoBehaviour
     });
   }
 
-  internal void DisconnectionPopup(bool isReconnection)
+  internal void DisconnectionPopup()
   {
-    //if(isReconnection)
-    //{
-    //    OpenPopup(ReconnectPopup_Object);
-    //}
-    //else
-    //{
-    //    ClosePopup(ReconnectPopup_Object);
-    //}
-
     if (!isExit)
     {
-      if (!ADPopup_Object.activeSelf) OpenPopup(DisconnectPopup_Object);
+      OpenPopup(DisconnectPopup_Object);
+    }
+  }
+
+  internal void ReconnectionPopup()
+  {
+    OpenPopup(ReconnectPopup_Object);
+  }
+  
+  internal void CheckAndClosePopups()
+  {
+    if (ReconnectPopup_Object.activeInHierarchy)
+    {
+      ClosePopup(ReconnectPopup_Object);
+    }
+    if (DisconnectPopup_Object.activeInHierarchy)
+    {
+      ClosePopup(DisconnectPopup_Object);
     }
   }
 
@@ -359,8 +367,12 @@ public class UIManager : MonoBehaviour
 
   private void CallOnExitFunction()
   {
-    isExit = true;
-    slotManager.CallCloseSocket();
+    if (!isExit)
+    {
+      isExit = true;
+      audioController.PlayButtonAudio();
+      slotManager.CallCloseSocket();
+    }
   }
 
   private void OpenSettings()
