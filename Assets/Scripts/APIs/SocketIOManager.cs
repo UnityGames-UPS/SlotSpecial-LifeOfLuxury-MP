@@ -31,8 +31,8 @@ public class SocketIOManager : MonoBehaviour
 
   protected string SocketURI = null;
 
-  // protected string TestSocketURI = "http://localhost:5000/"; 
-  protected string TestSocketURI = "https://sl3l5zz3-5000.inc1.devtunnels.ms/";
+  protected string TestSocketURI = "http://localhost:5000/"; 
+  // protected string TestSocketURI = "https://sl3l5zz3-5000.inc1.devtunnels.ms/";
 
   [SerializeField]
   private string testToken;
@@ -56,7 +56,6 @@ public class SocketIOManager : MonoBehaviour
 
   private float lastPongTime = 0f;
   private float pingInterval = 2f;
-  private float pongTimeout = 3f;
   private bool waitingForPong = false;
   private int missedPongs = 0;
   private const int MaxMissedPongs = 5;
@@ -132,8 +131,8 @@ public class SocketIOManager : MonoBehaviour
     options.ConnectWith = Best.SocketIO.Transports.TransportTypes.WebSocket;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-        JSManager.SendCustomMessage("authToken");
-        StartCoroutine(WaitForAuthToken(options));
+    JSManager.SendCustomMessage("authToken");
+    StartCoroutine(WaitForAuthToken(options));
 #else
     Func<SocketManager, Socket, object> authFunction = (manager, socket) =>
     {
@@ -146,7 +145,6 @@ public class SocketIOManager : MonoBehaviour
     SetupSocketManager(options);
 #endif
   }
-
 
   private IEnumerator WaitForAuthToken(SocketOptions options)
   {
@@ -199,7 +197,7 @@ public class SocketIOManager : MonoBehaviour
     // Set subscriptions
     gameSocket.On<ConnectResponse>(SocketIOEventTypes.Connect, OnConnected);
     gameSocket.On(SocketIOEventTypes.Disconnect, OnDisconnected); //Back2 Start
-    gameSocket.On(SocketIOEventTypes.Error, OnError); //Back2 Start
+    gameSocket.On<Error>(SocketIOEventTypes.Error, OnError);
     gameSocket.On<string>("game:init", OnListenEvent);
     gameSocket.On<string>("result", OnListenEvent);
     gameSocket.On<string>("gamble:result", OnListenEvent);
@@ -239,17 +237,20 @@ public class SocketIOManager : MonoBehaviour
 
   private void OnPongReceived(string data) //Back2 Start
   {
-    Debug.Log("✅ Received pong from server.");
+    // Debug.Log("✅ Received pong from server.");
     waitingForPong = false;
     missedPongs = 0;
     lastPongTime = Time.time;
-    Debug.Log($"⏱️ Updated last pong time: {lastPongTime}");
-    Debug.Log($"📦 Pong payload: {data}");
+    // Debug.Log($"⏱️ Updated last pong time: {lastPongTime}");
+    // Debug.Log($"📦 Pong payload: {data}");
   } //Back2 end
 
-  private void OnError()
+  private void OnError(Error err)
   {
-    Debug.LogError("Socket Error");
+    Debug.LogError("Socket Error Message: " + err);
+#if UNITY_WEBGL && !UNITY_EDITOR
+    JSManager.SendCustomMessage("error");
+#endif
   }
 
   private void OnListenEvent(string data)
@@ -298,7 +299,7 @@ public class SocketIOManager : MonoBehaviour
   {
     while (true)
     {
-      Debug.Log($"🟡 PingCheck | waitingForPong: {waitingForPong}, missedPongs: {missedPongs}, timeSinceLastPong: {Time.time - lastPongTime}");
+      // Debug.Log($"🟡 PingCheck | waitingForPong: {waitingForPong}, missedPongs: {missedPongs}, timeSinceLastPong: {Time.time - lastPongTime}");
 
       if (missedPongs == 0)
       {
@@ -327,7 +328,7 @@ public class SocketIOManager : MonoBehaviour
       // Send next ping
       waitingForPong = true;
       lastPongTime = Time.time;
-      Debug.Log("📤 Sending ping...");
+      // Debug.Log("📤 Sending ping...");
       SendDataWithNamespace("ping");
       yield return new WaitForSeconds(pingInterval);
     }

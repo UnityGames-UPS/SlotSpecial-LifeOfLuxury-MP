@@ -9344,9 +9344,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slotManager: {fileID: 2046803210}
   uiManager: {fileID: 377874625}
-  RaycastBlocker: {fileID: 0}
+  RaycastBlocker: {fileID: 2090082601}
   bonusdata: []
-  testToken: 4fe1307c054843b99e751523b056056e
+  testToken: 88dc76e7380f4ff8bce95edf58019994
   JSManager: {fileID: 1450211609}
 --- !u!1 &502207785
 GameObject:
