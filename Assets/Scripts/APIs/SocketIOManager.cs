@@ -76,6 +76,12 @@ public class SocketIOManager : MonoBehaviour
     OpenSocket();
   }
 
+  void CloseGame()
+  {
+    Debug.Log("Unity: Closing Game");
+    StartCoroutine(CloseSocket());
+  }
+
   #region GAMBLE GAME
   internal void GambleInit()
   {
