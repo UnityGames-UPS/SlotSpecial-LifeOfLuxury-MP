@@ -788,6 +788,7 @@ public class SlotBehaviour : MonoBehaviour
       {
         if (audioController) audioController.PlayMegaWinAudio();
         uiManager.PopulateWin(2, SocketManager.resultData.payload.winAmount);
+        SpinDelay += 1f;
       }
       else if (SocketManager.resultData.payload.winAmount >= (currentTotalBet * Lines))
       {
