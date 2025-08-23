@@ -9346,7 +9346,7 @@ MonoBehaviour:
   uiManager: {fileID: 377874625}
   RaycastBlocker: {fileID: 2090082601}
   bonusdata: []
-  testToken: 88dc76e7380f4ff8bce95edf58019994
+  testToken: 5ba8d17e5e844ee3ac7144e45abca4c8
   JSManager: {fileID: 1450211609}
 --- !u!1 &502207785
 GameObject:
@@ -37799,7 +37799,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 47581bef76d7a41a2b5b86433b8771e0, type: 3}
   - {fileID: 21300000, guid: 702a84c8c349a412faef5393e927a682, type: 3}
   Balance_text: {fileID: 1666685184}
-  TotalBet_text: {fileID: 1790737832}
   MainBet_text: {fileID: 69738317}
   Lines_text: {fileID: 1526757255}
   TotalWin_text: {fileID: 576684260}
