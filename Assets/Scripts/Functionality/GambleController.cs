@@ -109,7 +109,7 @@ public class GambleController : MonoBehaviour
       m_TakeButton.gameObject.SetActive(false);
       m_SlotStartButton.gameObject.SetActive(true);
       BetMinus.interactable = true;
-      BetMinus.interactable = true;
+      BetPlus.interactable = true;
     }
   }
 

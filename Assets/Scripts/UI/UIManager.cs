@@ -31,7 +31,7 @@ public class UIManager : MonoBehaviour
   [SerializeField]
   private Button Left_Button;
   [SerializeField]
-  private Button Paytable_Button;
+  internal Button Paytable_Button;
   [SerializeField]
   private Button ClosePayTable_Button;
 

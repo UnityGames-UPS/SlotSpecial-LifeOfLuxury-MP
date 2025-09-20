@@ -952,6 +952,7 @@ public class SlotBehaviour : MonoBehaviour
     if (TBetMinus_Button) TBetMinus_Button.interactable = toggle;
     if (TBetPlus_Button) TBetPlus_Button.interactable = toggle;
     if (uiManager.Settings_Button) uiManager.Settings_Button.interactable = toggle;
+    if (uiManager.Paytable_Button) uiManager.Paytable_Button.interactable = toggle;
   }
 
   //start the icons animation
