@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -214,7 +215,7 @@ public class GambleController : MonoBehaviour
     //TODO: Rotate Animation Here
     DOTweenUIManager.Instance.RotateUI(m_ShowCard.rectTransform, "Y", 2f, 360f * 2.5f);
     yield return new WaitForSeconds(2f); // Round Animation Show Time
-    ShowGambleUI(SocketManager.gambleData.payload.playerWon, SocketManager.gambleData.payload.winAmount, SocketManager.gambleData.player.balance, SocketManager.gambleData.payload.cardId);
+    ShowGambleUI(SocketManager.gambleData.payload.playerWon, SocketManager.gambleData.payload.winAmount, SocketManager.gambleData.player.balance, SocketManager.gambleData.payload.card.suit);
 
     if (SocketManager.gambleData.payload.playerWon)
     {
@@ -229,8 +230,31 @@ public class GambleController : MonoBehaviour
     }
   }
 
-  private void ShowGambleUI(bool won, double win, double balance, int id)
+  private void ShowGambleUI(bool won, double win, double balance, string suit)
   {
+    int id = -1;
+    switch (suit.ToUpper())
+    {
+      case "SPADES":
+        id = 2;
+        break;
+      case "DIAMONDS":
+        id = 0;
+        break;
+      case "HEARTS":
+        id = 1;
+        break;
+      case "CLUBS":
+        id = 3;
+        break;
+    }
+    
+    if(id == -1)
+    {
+      Debug.LogError("Something went wrong!");
+      return;
+    }
+
     m_ShowCard.gameObject.SetActive(false);
     m_ResultCard.gameObject.SetActive(true);
 

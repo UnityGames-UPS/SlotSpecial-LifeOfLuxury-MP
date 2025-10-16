@@ -582,8 +582,14 @@ public class Payload
 {
   public bool playerWon { get; set; }
   public double winAmount { get; set; }
-  public int cardId { get; set; }
+  public Card card { get; set; }
   public List<WinningCombination> wins { get; set; }
+}
+
+[SerializeField]
+public class Card
+{
+  public string suit;
 }
 
 [Serializable]
