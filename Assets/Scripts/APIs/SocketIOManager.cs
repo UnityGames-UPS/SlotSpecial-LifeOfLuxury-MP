@@ -31,7 +31,7 @@ public class SocketIOManager : MonoBehaviour
 
   protected string SocketURI = null;
 
-  protected string TestSocketURI = "http://localhost:5000/"; 
+  protected string TestSocketURI = "http://localhost:5000/";
   // protected string TestSocketURI = "https://sl3l5zz3-5000.inc1.devtunnels.ms/";
 
   [SerializeField]
@@ -254,10 +254,21 @@ public class SocketIOManager : MonoBehaviour
 
   private void OnError(Error err)
   {
-    Debug.LogError("Socket Error Message: " + err);
+    Debug.LogError("[ERROR] Socket error: " + err);
+    if (!string.IsNullOrEmpty(err.message) && err.message.Contains("Session expired"))
+    {
+      Debug.LogWarning("Session expired detected");
+      OnDisconnected();
 #if UNITY_WEBGL && !UNITY_EDITOR
-    JSManager.SendCustomMessage("error");
+        JSManager.SendCustomMessage("session_expired");
 #endif
+    }
+    else
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        JSManager.SendCustomMessage("error");
+#endif
+    }
   }
 
   private void OnListenEvent(string data)
@@ -534,7 +545,7 @@ public class FreeSpins
   public List<int> mults { get; set; }
 }
 
-[SerializeField]
+[Serializable]
 public class Bonus
 {
   public int BonusSpinStopIndex { get; set; }
@@ -586,7 +597,7 @@ public class Payload
   public List<WinningCombination> wins { get; set; }
 }
 
-[SerializeField]
+[Serializable]
 public class Card
 {
   public string suit;
