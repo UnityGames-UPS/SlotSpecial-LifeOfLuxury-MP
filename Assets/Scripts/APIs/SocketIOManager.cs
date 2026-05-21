@@ -31,7 +31,7 @@ public class SocketIOManager : MonoBehaviour
 
   protected string SocketURI = null;
 
-  protected string TestSocketURI = "http://localhost:5000/";
+  protected string TestSocketURI = "https://devrealtime.dingdinghouse.com/";
   // protected string TestSocketURI = "https://sl3l5zz3-5000.inc1.devtunnels.ms/";
 
   [SerializeField]
@@ -543,6 +543,7 @@ public class FreeSpins
   public int count { get; set; }
   public bool isFreeSpin { get; set; }
   public List<int> mults { get; set; }
+  public int extraSpinsTriggered { get; set; }
 }
 
 [Serializable]
@@ -595,6 +596,7 @@ public class Payload
   public double winAmount { get; set; }
   public Card card { get; set; }
   public List<WinningCombination> wins { get; set; }
+  public int extraSpinsTriggered { get; set; }
 }
 
 [Serializable]

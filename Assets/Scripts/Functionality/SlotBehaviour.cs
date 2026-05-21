@@ -365,16 +365,18 @@ public class SlotBehaviour : MonoBehaviour
     // {
     //     ToggleButtonGrp(false);
     // }
-    if (AutoSpinRoutine != null || tweenroutine != null)
+    if (AutoSpinRoutine != null)
     {
       StopCoroutine(AutoSpinRoutine);
+      AutoSpinRoutine = null;
+    }
+    if (tweenroutine != null)
+    {
       StopCoroutine(tweenroutine);
       tweenroutine = null;
-      AutoSpinRoutine = null;
-      StopCoroutine(StopAutoSpinCoroutine());
     }
 
-    if (!SlotStart_Button.interactable)
+    if (!SlotStart_Button.interactable && !IsFreeSpin)
     {
       ToggleButtonGrp(true);
     }
@@ -530,14 +532,17 @@ public class SlotBehaviour : MonoBehaviour
       Textroutine = StartCoroutine(FlickerText("Free spins in progress !!!"));
     }
     //if (uiManager) uiManager.ClosePopup();
-    if (!autoSpin)
+    if (!autoSpin && !IsFreeSpin)
     {
       if (AutoSpinRoutine != null)
       {
         StopCoroutine(AutoSpinRoutine);
+        AutoSpinRoutine = null;
+      }
+      if (tweenroutine != null)
+      {
         StopCoroutine(tweenroutine);
         tweenroutine = null;
-        AutoSpinRoutine = null;
       }
     }
 
@@ -701,18 +706,9 @@ public class SlotBehaviour : MonoBehaviour
     balance = SocketManager.playerdata.balance;
     currentBalance = SocketManager.playerdata.balance;
 
-    CheckWinPopups();
-
-    if (IsFreeSpin || SocketManager.resultData.features.freeSpin.isFreeSpin)
-    {
-      yield return new WaitForSeconds(1f);
-    }
-
-    yield return new WaitUntil(() => !CheckPopups);
-    CheckPopups = true;
-
     if (SocketManager.resultData.features.freeSpin.isFreeSpin)
     {
+      bool wasFreeSpin = IsFreeSpin;
       if (IsFreeSpin)
       {
         IsFreeSpin = false;
@@ -722,31 +718,72 @@ public class SlotBehaviour : MonoBehaviour
           FreeSpinRoutine = null;
         }
       }
-      uiManager.FreeSpinProcess((int)SocketManager.resultData.features.freeSpin.count);
       if (IsAutoSpin)
       {
         WasAutoSpinOn = true;
         StopAutoSpin();
         yield return new WaitForSeconds(0.1f);
       }
-    }
-    if (!IsFreeSpin && !SocketManager.resultData.features.freeSpin.isFreeSpin && SocketManager.resultData.payload.winAmount > 0 && !IsAutoSpin)
-    {
-      m_GambleController.TurnOnGambleButton(true);
-    }
 
-    if (!IsAutoSpin && !IsFreeSpin)
-    {
-      ToggleButtonGrp(true);
+      if (AnimationToggleRoutine != null)
+      {
+        float elapsedTime = 0f;
+        while (elapsedTime < 1.5f && AnimationToggleRoutine != null)
+        {
+          yield return null;
+          elapsedTime += Time.deltaTime;
+        }
+      }
+      PlayStopAnimation(false);
+
+      int spinsToShow = wasFreeSpin ? SocketManager.resultData.features.freeSpin.extraSpinsTriggered : (int)SocketManager.resultData.features.freeSpin.count;
+      bool shouldShowPopup = !wasFreeSpin || spinsToShow > 0;
+
+      if (shouldShowPopup)
+      {
+        bool popupFinished = false;
+        uiManager.ShowFreeSpinHitPopup(spinsToShow, () =>
+        {
+          popupFinished = true;
+        });
+
+        yield return new WaitUntil(() => popupFinished);
+      }
+
+      uiManager.FreeSpinProcessDirect((int)SocketManager.resultData.features.freeSpin.count);
+      CheckPopups = false;
       IsSpinning = false;
     }
     else
     {
-      if (SocketManager.resultData.payload.wins.Count > 0 && !firstLoopDone)
+      CheckWinPopups();
+
+      if (IsFreeSpin)
       {
-        yield return new WaitUntil(() => firstLoopDone);
+        yield return new WaitForSeconds(1f);
       }
-      IsSpinning = false;
+
+      yield return new WaitUntil(() => !CheckPopups);
+      CheckPopups = true;
+
+      if (!IsFreeSpin && SocketManager.resultData.payload.winAmount > 0 && !IsAutoSpin)
+      {
+        m_GambleController.TurnOnGambleButton(true);
+      }
+
+      if (!IsAutoSpin && !IsFreeSpin)
+      {
+        ToggleButtonGrp(true);
+        IsSpinning = false;
+      }
+      else
+      {
+        if (SocketManager.resultData.payload.wins.Count > 0 && !firstLoopDone)
+        {
+          yield return new WaitUntil(() => firstLoopDone);
+        }
+        IsSpinning = false;
+      }
     }
   }
 
@@ -885,6 +922,7 @@ public class SlotBehaviour : MonoBehaviour
       firstLoopDone = true;
       if (IsFreeSpin || SocketManager.resultData.features.freeSpin.isFreeSpin || IsAutoSpin)
       {
+        AnimationToggleRoutine = null;
         yield break;
       }
       yield return new WaitForSeconds(1f);

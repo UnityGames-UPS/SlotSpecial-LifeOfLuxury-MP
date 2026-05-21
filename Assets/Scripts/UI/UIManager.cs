@@ -236,6 +236,66 @@ public class UIManager : MonoBehaviour
     });
   }
 
+  internal void FreeSpinProcessDirect(int spins)
+  {
+    FreeSpins = spins;
+    StartFreeSpins(spins);
+  }
+
+  internal void ShowFreeSpinHitPopup(int spins, Action onComplete)
+  {
+    if (FreeSpinPopup_Object)
+    {
+      if (Free_Text)
+      {
+        Free_Text.text = spins.ToString();
+      }
+
+      FreeSpinPopup_Object.SetActive(true);
+
+      RectTransform popupRT = FreeSpinPopup_Object.GetComponent<RectTransform>();
+      if (popupRT && m_DoTweenUIManager)
+      {
+        m_DoTweenUIManager.PopIn(popupRT, 0.5f);
+      }
+      else if (popupRT)
+      {
+        popupRT.localScale = Vector3.zero;
+        popupRT.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+      }
+
+      DOVirtual.DelayedCall(1.5f, () =>
+      {
+        if (popupRT && m_DoTweenUIManager)
+        {
+          m_DoTweenUIManager.PopOut(popupRT, 0.5f);
+          DOVirtual.DelayedCall(0.5f, () =>
+          {
+            FreeSpinPopup_Object.SetActive(false);
+            onComplete?.Invoke();
+          });
+        }
+        else if (popupRT)
+        {
+          popupRT.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack).OnComplete(() =>
+          {
+            FreeSpinPopup_Object.SetActive(false);
+            onComplete?.Invoke();
+          });
+        }
+        else
+        {
+          FreeSpinPopup_Object.SetActive(false);
+          onComplete?.Invoke();
+        }
+      });
+    }
+    else
+    {
+      onComplete?.Invoke();
+    }
+  }
+
   internal void DisconnectionPopup()
   {
     if (!isExit)
@@ -345,23 +405,35 @@ public class UIManager : MonoBehaviour
 
   private void PopulateSymbolsPayout(Paylines paylines)
   {
-    for (int i = 0; i < paylines.symbols.Count - 2; i++)
+    int textIndex = 0;
+    for (int i = 0; i < paylines.symbols.Count; i++)
     {
+      if (textIndex >= SymbolsText.Length) break;
+
+      if (paylines.symbols[i].multiplier == null || paylines.symbols[i].multiplier.Count == 0)
+      {
+        continue;
+      }
+
       string text = null;
-      if (paylines.symbols[i].multiplier[0] != 0)
+      if (paylines.symbols[i].multiplier.Count > 0 && paylines.symbols[i].multiplier[0] != 0)
       {
         text += "<color=white>5</color>  " + paylines.symbols[i].multiplier[0].ToString("f2") + "x";
       }
-      if (paylines.symbols[i].multiplier[1] != 0)
+      if (paylines.symbols[i].multiplier.Count > 1 && paylines.symbols[i].multiplier[1] != 0)
       {
         text += "\n<color=white>4</color>  " + paylines.symbols[i].multiplier[1].ToString("f2") + "x";
       }
-      if (paylines.symbols[i].multiplier[2] != 0)
+      if (paylines.symbols[i].multiplier.Count > 2 && paylines.symbols[i].multiplier[2] != 0)
       {
         text += "\n<color=white>3</color>  " + paylines.symbols[i].multiplier[2].ToString("f2") + "x";
       }
 
-      if (SymbolsText[i]) SymbolsText[i].text = text;
+      if (SymbolsText[textIndex]) 
+      {
+        SymbolsText[textIndex].text = text;
+      }
+      textIndex++;
     }
   }
 
