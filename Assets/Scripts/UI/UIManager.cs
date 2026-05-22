@@ -300,6 +300,10 @@ public class UIManager : MonoBehaviour
   {
     if (!isExit)
     {
+      if (ReconnectPopup_Object && ReconnectPopup_Object.activeInHierarchy)
+      {
+        ClosePopup(ReconnectPopup_Object);
+      }
       OpenPopup(DisconnectPopup_Object);
     }
   }
@@ -369,6 +373,7 @@ public class UIManager : MonoBehaviour
 
   internal void UpdateFreeSpinUI(List<int> m_values)
   {
+    if (m_values == null) return;
     for (int i = 0; i < m_values.Count; i++)
     {
       if (m_values[i] != m_TempValues[i])
@@ -515,7 +520,17 @@ public class UIManager : MonoBehaviour
   {
     if (audioController) audioController.PlayButtonAudio();
     if (Popup) Popup.SetActive(false);
-    if (!DisconnectPopup_Object.activeSelf)
+    
+    bool anyPopupActive = false;
+    if (DisconnectPopup_Object && DisconnectPopup_Object.activeSelf) anyPopupActive = true;
+    if (ReconnectPopup_Object && ReconnectPopup_Object.activeSelf) anyPopupActive = true;
+    if (WinPopup_Object && WinPopup_Object.activeSelf) anyPopupActive = true;
+    if (Five_Of_A_Kind_Object && Five_Of_A_Kind_Object.activeSelf) anyPopupActive = true;
+    if (QuitPopup_Object && QuitPopup_Object.activeSelf) anyPopupActive = true;
+    if (LBPopup_Object && LBPopup_Object.activeSelf) anyPopupActive = true;
+    if (ADPopup_Object && ADPopup_Object.activeSelf) anyPopupActive = true;
+    
+    if (!anyPopupActive)
     {
       if (MainPopup_Object) MainPopup_Object.SetActive(false);
     }

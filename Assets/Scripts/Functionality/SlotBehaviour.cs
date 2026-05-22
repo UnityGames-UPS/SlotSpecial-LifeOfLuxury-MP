@@ -326,6 +326,7 @@ public class SlotBehaviour : MonoBehaviour
     uiManager.SwitchFreeSpinMode(false);
     if (WasAutoSpinOn)
     {
+      WasAutoSpinOn = false;
       AutoSpin();
     }
     else
@@ -339,11 +340,16 @@ public class SlotBehaviour : MonoBehaviour
   {
     if (IsAutoSpin)
     {
-      Debug.Log("<color=red><b> Auto Spinning </b></color>");
+      Debug.Log("<color=red><b> Auto Spinning Stopped </b></color>");
       IsAutoSpin = false;
+      WasAutoSpinOn = false;
       if (AutoSpinStop_Button) AutoSpinStop_Button.gameObject.SetActive(false);
       if (AutoSpinStart_Button) AutoSpinStart_Button.gameObject.SetActive(true);
-      StartCoroutine(StopAutoSpinCoroutine());
+      
+      if (!IsSpinning && !SlotStart_Button.interactable && !IsFreeSpin)
+      {
+        ToggleButtonGrp(true);
+      }
     }
   }
 
@@ -354,31 +360,6 @@ public class SlotBehaviour : MonoBehaviour
       StartSlots(IsAutoSpin);
       yield return tweenroutine;
       yield return new WaitForSeconds(SpinDelay);
-    }
-    WasAutoSpinOn = false;
-  }
-
-  private IEnumerator StopAutoSpinCoroutine()
-  {
-    yield return new WaitUntil(() => !IsSpinning);
-    // if (SocketManager.resultData.freeSpin.freeSpinCount > 0)
-    // {
-    //     ToggleButtonGrp(false);
-    // }
-    if (AutoSpinRoutine != null)
-    {
-      StopCoroutine(AutoSpinRoutine);
-      AutoSpinRoutine = null;
-    }
-    if (tweenroutine != null)
-    {
-      StopCoroutine(tweenroutine);
-      tweenroutine = null;
-    }
-
-    if (!SlotStart_Button.interactable && !IsFreeSpin)
-    {
-      ToggleButtonGrp(true);
     }
   }
 
@@ -720,8 +701,8 @@ public class SlotBehaviour : MonoBehaviour
       }
       if (IsAutoSpin)
       {
-        WasAutoSpinOn = true;
         StopAutoSpin();
+        WasAutoSpinOn = true;
         yield return new WaitForSeconds(0.1f);
       }
 
@@ -783,6 +764,11 @@ public class SlotBehaviour : MonoBehaviour
           yield return new WaitUntil(() => firstLoopDone);
         }
         IsSpinning = false;
+        
+        if (!IsAutoSpin && !IsFreeSpin)
+        {
+          ToggleButtonGrp(true);
+        }
       }
     }
   }
@@ -838,7 +824,6 @@ public class SlotBehaviour : MonoBehaviour
     {
       CheckPopups = false;
     }
-    CheckPopups = false;
   }
 
   /// <summary>
@@ -1120,9 +1105,61 @@ public class SlotBehaviour : MonoBehaviour
   }
 
 
+  internal void StopGameOnDisconnect()
+  {
+    if (AutoSpinRoutine != null)
+    {
+      StopCoroutine(AutoSpinRoutine);
+      AutoSpinRoutine = null;
+    }
+    IsAutoSpin = false;
+    WasAutoSpinOn = false;
+
+    if (FreeSpinRoutine != null)
+    {
+      StopCoroutine(FreeSpinRoutine);
+      FreeSpinRoutine = null;
+    }
+    IsFreeSpin = false;
+
+    if (tweenroutine != null)
+    {
+      StopCoroutine(tweenroutine);
+      tweenroutine = null;
+    }
+
+    if (Textroutine != null)
+    {
+      StopCoroutine(Textroutine);
+      Textroutine = null;
+    }
+
+    if (AnimationToggleRoutine != null)
+    {
+      StopCoroutine(AnimationToggleRoutine);
+      AnimationToggleRoutine = null;
+    }
+
+    m_Is_Playing_Animation_In_Loop = false;
+    TurnAllMiniImagesOff();
+    
+    KillAllTweens();
+
+    if (audioController) audioController.PlaySpinAudio(false);
+    CheckSpinAudio = false;
+
+    IsSpinning = false;
+    StopSpinToggle = false;
+
+    if (AutoSpinStop_Button) AutoSpinStop_Button.gameObject.SetActive(false);
+    if (AutoSpinStart_Button) AutoSpinStart_Button.gameObject.SetActive(true);
+    
+    ToggleButtonGrp(true);
+  }
+
   private void KillAllTweens()
   {
-    for (int i = 0; i < numberOfSlots; i++)
+    for (int i = 0; i < alltweens.Count; i++)
     {
       alltweens[i].Kill();
     }

@@ -58,7 +58,7 @@ public class SocketIOManager : MonoBehaviour
   private float pingInterval = 2f;
   private bool waitingForPong = false;
   private int missedPongs = 0;
-  private const int MaxMissedPongs = 5;
+  private const int MaxMissedPongs = 15;
   private Coroutine PingRoutine; //Back2 end
 
   private void Awake()
@@ -240,6 +240,7 @@ public class SocketIOManager : MonoBehaviour
     isConnected = false;
     ResetPingRoutine();
     uiManager.DisconnectionPopup();
+    if (slotManager) slotManager.StopGameOnDisconnect();
   } //Back2 end
 
   private void OnPongReceived(string data) //Back2 Start
@@ -248,6 +249,13 @@ public class SocketIOManager : MonoBehaviour
     waitingForPong = false;
     missedPongs = 0;
     lastPongTime = Time.time;
+    
+    uiManager.CheckAndClosePopups();
+    if (!isConnected && hasEverConnected)
+    {
+        isConnected = true;
+        SendPing();
+    }
     // Debug.Log($"⏱️ Updated last pong time: {lastPongTime}");
     // Debug.Log($"📦 Pong payload: {data}");
   } //Back2 end
@@ -339,6 +347,7 @@ public class SocketIOManager : MonoBehaviour
           Debug.LogError("❌ Unable to connect to server — 5 consecutive pongs missed.");
           isConnected = false;
           uiManager.DisconnectionPopup();
+          if (slotManager) slotManager.StopGameOnDisconnect();
           yield break;
         }
       }
