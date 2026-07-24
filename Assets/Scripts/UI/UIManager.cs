@@ -129,6 +129,9 @@ public class UIManager : MonoBehaviour
   [SerializeField]
   private SocketIOManager socketManager;
 
+  [SerializeField]
+  private JSFunctCalls jsFunctCalls;
+
   private bool isMusic = true;
   private bool isSound = true;
   private bool isExit = false;
@@ -136,6 +139,31 @@ public class UIManager : MonoBehaviour
 
   private int slideCounter = 0;
 
+  private void Awake()
+  {
+    if (jsFunctCalls != null)
+      jsFunctCalls.RegisterVisibilityListener(gameObject.name);
+  }
+
+  public void OnFocusChanged(string value)
+  {
+    bool focused = value == "1";
+    Debug.Log("UNITY FOCUS CHANGED: " + value + " (focused: " + focused + ")");
+    if (audioController)
+    {
+      if (focused)
+      {
+        audioController.ToggleMute(!isMusic, "bg");
+        audioController.ToggleMute(!isSound, "button");
+        audioController.ToggleMute(!isSound, "wl");
+      }
+      else
+      {
+        audioController.ToggleMute(true, "all");
+      }
+    }
+    socketManager?.HandleFocusChange(focused);
+  }
 
   private void Start()
   {
@@ -570,6 +598,7 @@ public class UIManager : MonoBehaviour
 
   private void ToggleMusic(bool isOn)
   {
+    isMusic = isOn;
     if (isOn)
     {
       audioController.ToggleMute(false, "bg");
@@ -587,6 +616,7 @@ public class UIManager : MonoBehaviour
 
   private void ToggleSound(bool isOn)
   {
+    isSound = isOn;
     if (isOn)
     {
       if (audioController) audioController.ToggleMute(false, "button");

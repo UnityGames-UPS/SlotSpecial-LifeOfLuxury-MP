@@ -6639,6 +6639,7 @@ MonoBehaviour:
   GameExit_Button: {fileID: 702497084}
   slotManager: {fileID: 2046803210}
   socketManager: {fileID: 500036492}
+  jsFunctCalls: {fileID: 1450211609}
 --- !u!1 &377906593
 GameObject:
   m_ObjectHideFlags: 0
