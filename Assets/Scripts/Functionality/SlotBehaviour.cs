@@ -539,6 +539,13 @@ public class SlotBehaviour : MonoBehaviour
     TotalWin_text.text = win.ToString();
   }
 
+  internal void UpdateBalanceDisplay(double newBalance)
+  {
+    currentBalance = newBalance;
+    if (Balance_text) Balance_text.text = currentBalance.ToString("F3");
+    CompareBalance();
+  }
+
   //manage the Routine for spinning of the slots
   private IEnumerator TweenRoutine()
   {

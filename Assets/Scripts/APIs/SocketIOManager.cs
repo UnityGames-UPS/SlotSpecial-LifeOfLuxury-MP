@@ -271,6 +271,7 @@ public class SocketIOManager : MonoBehaviour
     gameSocket.On<string>("alert", OnSocketAlert);
     gameSocket.On<string>("pong", OnPongReceived); //Back2 Start
     gameSocket.On<string>("AnotherDevice", OnSocketOtherDevice); //BackendChanges Finish
+    gameSocket.On<string>("balance:sync", OnBalanceSync);
 
     manager.Open(); //Back2 Start
   }
@@ -336,6 +337,17 @@ public class SocketIOManager : MonoBehaviour
         JSManager.SendCustomMessage("error");
 #endif
     }
+  }
+
+  private void OnBalanceSync(string data)
+  {
+    BalanceSyncPayload syncPayload = JsonConvert.DeserializeObject<BalanceSyncPayload>(data);
+    if (syncPayload == null) return;
+
+    if (playerdata == null) playerdata = new Player();
+    playerdata.balance = syncPayload.balance;
+
+    if (slotManager) slotManager.UpdateBalanceDisplay(syncPayload.balance);
   }
 
   private void OnListenEvent(string data)
@@ -707,6 +719,12 @@ public class Symbol
 public class Player
 {
   public double balance { get; set; }
+}
+
+[Serializable]
+public class BalanceSyncPayload
+{
+  public double balance;
 }
 
 [Serializable]

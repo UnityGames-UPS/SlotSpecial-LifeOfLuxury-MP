@@ -16,32 +16,50 @@ public class AudioController : MonoBehaviour
     private event Action m_On_Application_Focus;
     private event Action m_On_Application_Out_Of_Focus;
 
+    private bool isForceMuted = false;
+    private readonly Dictionary<AudioSource, bool> preFocusMuteState = new Dictionary<AudioSource, bool>();
+
     private void OnDisable()
     {
         m_On_Application_Focus -= HandleApplicationFocus;
         m_On_Application_Out_Of_Focus -= HandleApplicationOutOfFocus;
     }
 
+    private List<AudioSource> AllAudioSources()
+    {
+        return new List<AudioSource> { m_BG_Audio, m_Click_Audio, m_Win_Audio, m_Bonus_Audio, m_Spin_Audio, m_Spin_Clicked_Audio };
+    }
+
+    internal void SetMuteAll(bool forceMute)
+    {
+        if (forceMute == isForceMuted) return;
+        isForceMuted = forceMute;
+
+        foreach (var source in AllAudioSources())
+        {
+            if (source == null) continue;
+            if (forceMute)
+            {
+                preFocusMuteState[source] = source.mute;
+                source.mute = true;
+            }
+            else
+            {
+                source.mute = preFocusMuteState.TryGetValue(source, out bool prevMuted) ? prevMuted : source.mute;
+            }
+        }
+    }
+
     private void HandleApplicationFocus()
     {
         m_Player_Listener.enabled = true;
-        if (m_BG_Audio) m_BG_Audio.UnPause();
-        if (m_Click_Audio) m_Click_Audio.UnPause();
-        if (m_Win_Audio) m_Win_Audio.UnPause();
-        if (m_Bonus_Audio) m_Bonus_Audio.UnPause();
-        if (m_Spin_Audio) m_Spin_Audio.UnPause();
-        if (m_Spin_Clicked_Audio) m_Spin_Clicked_Audio.UnPause();
+        SetMuteAll(false);
     }
 
     private void HandleApplicationOutOfFocus()
     {
         m_Player_Listener.enabled = false;
-        if (m_BG_Audio) m_BG_Audio.Pause();
-        if (m_Click_Audio) m_Click_Audio.Pause();
-        if (m_Win_Audio) m_Win_Audio.Pause();
-        if (m_Bonus_Audio) m_Bonus_Audio.Pause();
-        if (m_Spin_Audio) m_Spin_Audio.Pause();
-        if (m_Spin_Clicked_Audio) m_Spin_Clicked_Audio.Pause();
+        SetMuteAll(true);
     }
 
     internal void InitialAudioSetup()
